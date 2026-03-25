@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หน้าต่างผู้ดูแลระบบ | iMaintain System</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="min-h-screen text-gray-800 relative overflow-x-hidden font-sans bg-[#faf9fe]">
+
+    <div class="aurora-bg">
+        <div class="aurora-blob blob-1"></div>
+        <div class="aurora-blob blob-2"></div>
+        <div class="aurora-blob blob-3"></div>
+    </div>
+
+    <nav class="glass-pane sticky top-0 z-40 px-4 md:px-8 py-3 border-b-0 shadow-sm rounded-b-3xl mx-2 md:mx-6 mt-2">
+        <div class="flex items-center justify-between max-w-[1600px] mx-auto w-full">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-md">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-gray-900 leading-tight text-lg">iMaintain</h1>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Admin Portal</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex flex-col items-end mr-2">
+                    <span id="user-name-display" class="text-sm font-semibold text-gray-800">กำลังโหลด...</span>
+                    <span class="text-xs text-purple-600 font-medium">ผู้ดูแลระบบสูงสุด</span>
+                </div>
+                <div class="w-10 h-10 bg-white/60 rounded-full flex items-center justify-center border-2 border-white text-purple-600 shadow-sm">
+                    <i data-lucide="crown" class="w-5 h-5"></i>
+                </div>
+                <button onclick="logout()" class="p-2.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all" title="ออกจากระบบ">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="w-full max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 mt-6 flex flex-col md:flex-row gap-6 lg:gap-8 items-start mb-10">
+        
+        <aside class="w-full md:w-64 lg:w-72 shrink-0 flex flex-row md:flex-col gap-2 overflow-x-auto no-scrollbar md:sticky md:top-28">
+            <button onclick="switchAdminTab('dashboard')" id="nav-dashboard" class="admin-nav-btn flex-1 md:flex-none flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 bg-purple-600 text-white shadow-lg shadow-purple-500/30 font-medium text-sm whitespace-nowrap">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> ภาพรวมระบบ
+            </button>
+            <button onclick="switchAdminTab('users')" id="nav-users" class="admin-nav-btn flex-1 md:flex-none flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 bg-white/50 text-gray-700 hover:bg-white hover:text-purple-600 hover:shadow-md border border-transparent font-medium text-sm whitespace-nowrap">
+                <i data-lucide="users" class="w-5 h-5"></i> จัดการผู้ใช้งาน
+            </button>
+            <button onclick="switchAdminTab('materials')" id="nav-materials" class="admin-nav-btn flex-1 md:flex-none flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 bg-white/50 text-gray-700 hover:bg-white hover:text-purple-600 hover:shadow-md border border-transparent font-medium text-sm whitespace-nowrap">
+                <i data-lucide="box" class="w-5 h-5"></i> คลังวัสดุอุปกรณ์
+            </button>
+        </aside>
+
+        <main class="flex-1 w-full relative min-h-[60vh]">
+            
+            <div id="view-dashboard" class="animate-fade-in space-y-6">
+                <div class="glass-pane p-6 lg:p-8 rounded-[2rem] shadow-sm border border-white/60">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl lg:text-2xl font-bold text-gray-900">ภาพรวมระบบทั้งหมด (Admin Dashboard)</h2>
+                        <button onclick="loadDashboard()" class="p-2 bg-white/60 hover:bg-white text-gray-600 rounded-xl shadow-sm transition-all" title="รีเฟรชข้อมูล">
+                            <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="admin-stats-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                        <div class="col-span-full text-center py-6 text-gray-400 bg-white/30 rounded-2xl border border-dashed border-gray-200">
+                            <i data-lucide="loader-2" class="w-8 h-8 mx-auto mb-2 text-gray-300 animate-spin"></i>
+                            กำลังดึงข้อมูลสถิติระดับประเทศ...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-users" class="animate-fade-in hidden-view">
+                <div class="glass-pane p-6 md:p-8 rounded-[2rem] border border-white/60 shadow-sm">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <div>
+                            <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">จัดการบัญชีผู้ใช้งาน</h2>
+                            <p class="text-sm text-gray-500 mt-1">รายชื่อนักศึกษา, พนักงาน, ช่างซ่อม และหัวหน้าช่าง</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                            <div class="relative w-full sm:w-64">
+                                <i data-lucide="search" class="w-5 h-5 absolute left-4 top-3.5 text-gray-400"></i>
+                                <input type="text" class="input-glass py-3 pl-11 text-sm w-full rounded-2xl" placeholder="ค้นหาชื่อ หรืออีเมล...">
+                            </div>
+                            <button class="w-full sm:w-auto px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 text-sm font-semibold">
+                                <i data-lucide="user-plus" class="w-4 h-4"></i> เพิ่มผู้ใช้
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="users-list-container" class="space-y-3">
+                        <div class="text-center py-16 text-gray-400 bg-white/30 rounded-2xl border border-dashed border-gray-300">
+                            <i data-lucide="loader-2" class="w-12 h-12 mx-auto mb-3 text-gray-300 animate-spin"></i>
+                            <p>กำลังโหลดรายชื่อผู้ใช้งานทั้งหมด...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-materials" class="animate-fade-in hidden-view">
+                <div class="glass-pane p-6 md:p-8 rounded-[2rem] border border-white/60 shadow-sm">
+                    
+                    <div id="low-stock-alert" class="hidden mb-6 bg-red-50/80 backdrop-blur-sm text-red-600 text-sm font-bold p-4 rounded-2xl border border-red-200 flex items-center justify-between shadow-sm animate-pulse">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="alert-octagon" class="w-5 h-5"></i>
+                            <span>⚠️ มีของใกล้หมด x รายการ!</span>
+                        </div>
+                        <button class="text-xs bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700">ดูรายการ</button>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <div>
+                            <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">คลังวัสดุอุปกรณ์และอะไหล่</h2>
+                            <p class="text-sm text-gray-500 mt-1">จัดการสต๊อก แจ้งเตือนของใกล้หมด และประวัติการเบิกใช้</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                            <div class="relative w-full sm:w-64">
+                                <i data-lucide="search" class="w-5 h-5 absolute left-4 top-3.5 text-gray-400"></i>
+                                <input type="text" class="input-glass py-3 pl-11 text-sm w-full rounded-2xl" placeholder="ค้นหารหัส หรือชื่ออะไหล่...">
+                            </div>
+                            <button class="w-full sm:w-auto px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 text-sm font-semibold">
+                                <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มรายการใหม่
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="materials-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="col-span-full text-center py-16 text-gray-400 bg-white/30 rounded-2xl border border-dashed border-gray-300">
+                            <i data-lucide="loader-2" class="w-12 h-12 mx-auto mb-3 text-gray-300 animate-spin"></i>
+                            <p>กำลังเชื่อมต่อคลังข้อมูลวัสดุ...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="toast-root"></div>
+
+    <script>
+        lucide.createIcons();
+
+        // ฟังก์ชันสลับหน้าต่าง (เชื่อมกับ logic ของ admin.js)
+        function switchAdminTab(tabName) {
+            // ซ่อนทุกหน้า
+            document.getElementById('view-dashboard').classList.add('hidden-view');
+            document.getElementById('view-users').classList.add('hidden-view');
+            document.getElementById('view-materials').classList.add('hidden-view');
+            
+            // รีเซ็ตปุ่มทั้งหมดให้เป็นสีเทา (Hover แล้วขึ้นสีม่วง)
+            const btns = document.querySelectorAll('.admin-nav-btn');
+            btns.forEach(btn => {
+                btn.classList.remove('bg-purple-600', 'text-white', 'shadow-lg', 'shadow-purple-500/30');
+                btn.classList.add('bg-white/50', 'text-gray-700', 'hover:bg-white', 'hover:text-purple-600', 'hover:shadow-md');
+            });
+
+            // เปิดหน้าที่เลือก และทำให้ปุ่มเป็นสี Active (Purple)
+            document.getElementById('view-' + tabName).classList.remove('hidden-view');
+            const activeBtn = document.getElementById('nav-' + tabName);
+            
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-white/50', 'text-gray-700', 'hover:bg-white', 'hover:text-purple-600', 'hover:shadow-md');
+                activeBtn.classList.add('bg-purple-600', 'text-white', 'shadow-lg', 'shadow-purple-500/30');
+            }
+
+            // ถ้ามีฟังก์ชันนี้อยู่ใน admin.js ให้เรียกใช้เพื่อสลับข้อมูล
+            if (typeof window.switchTab === 'function') {
+                window.switchTab(tabName);
+            }
+        }
+    </script>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>  
+    <script src="js/admin.js"></script> </body>
+</html>

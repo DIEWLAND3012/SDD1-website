@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หน้าต่างหัวหน้าช่าง | iMaintain System</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="min-h-screen text-gray-800 relative overflow-x-hidden font-sans bg-[#faf9fe]">
+
+    <div class="aurora-bg">
+        <div class="aurora-blob blob-1"></div>
+        <div class="aurora-blob blob-2"></div>
+        <div class="aurora-blob blob-3"></div>
+    </div>
+
+    <nav class="glass-pane sticky top-0 z-40 px-4 md:px-8 py-3 border-b-0 shadow-sm rounded-b-3xl mx-2 md:mx-6 mt-2">
+        <div class="flex items-center justify-between max-w-[1600px] mx-auto w-full">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+                    <i data-lucide="briefcase" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-gray-900 leading-tight text-lg">iMaintain</h1>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Manager Portal</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex flex-col items-end mr-2">
+                    <span id="user-name-display" class="text-sm font-semibold text-gray-800">กำลังโหลด...</span>
+                    <span class="text-xs text-indigo-600 font-medium">หัวหน้าช่าง / ผู้จัดการ</span>
+                </div>
+                <div class="w-10 h-10 bg-white/60 rounded-full flex items-center justify-center border-2 border-white text-indigo-600 shadow-sm">
+                    <i data-lucide="user" class="w-5 h-5"></i>
+                </div>
+                <button onclick="logout()" class="p-2.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all" title="ออกจากระบบ">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="w-full max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 mt-6 flex flex-col md:flex-row gap-6 lg:gap-8 items-start mb-10">
+        
+        <aside class="w-full md:w-64 lg:w-72 shrink-0 flex flex-row md:flex-col gap-2 overflow-x-auto no-scrollbar md:sticky md:top-28">
+            <button onclick="switchManagerTab('dashboard')" id="nav-dashboard" class="mgr-nav-btn flex-1 md:flex-none flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 font-medium text-sm whitespace-nowrap">
+                <i data-lucide="pie-chart" class="w-5 h-5"></i> ภาพรวมระบบ
+            </button>
+            <button onclick="switchManagerTab('requests')" id="nav-requests" class="mgr-nav-btn flex-1 md:flex-none flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 bg-white/50 text-gray-700 hover:bg-white hover:text-indigo-600 hover:shadow-md border border-transparent font-medium text-sm whitespace-nowrap">
+                <i data-lucide="inbox" class="w-5 h-5"></i> จัดการงานแจ้งซ่อม
+            </button>
+        </aside>
+
+        <main class="flex-1 w-full relative min-h-[60vh]">
+            
+            <div id="view-dashboard" class="animate-fade-in space-y-6">
+                <div class="glass-pane p-6 lg:p-8 rounded-[2rem] shadow-sm border border-white/60">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl lg:text-2xl font-bold text-gray-900">สถิติระบบแจ้งซ่อม</h2>
+                        <button onclick="loadDashboard()" class="p-2 bg-white/60 hover:bg-white text-gray-600 rounded-xl shadow-sm transition-all" title="รีเฟรชข้อมูล">
+                            <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <div id="dashboard-stats-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        <div class="col-span-full text-center py-6 text-gray-400 bg-white/30 rounded-2xl border border-dashed border-gray-200">
+                            <i data-lucide="loader-2" class="w-8 h-8 mx-auto mb-2 text-gray-300 animate-spin"></i>
+                            กำลังโหลดข้อมูลสถิติ...
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-pane p-6 lg:p-8 rounded-[2rem] shadow-sm border border-white/60">
+                    <h2 class="text-lg lg:text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <i data-lucide="activity" class="w-6 h-6 text-indigo-500"></i> สรุปประสิทธิภาพการทำงาน
+                    </h2>
+                    <div class="text-center py-10 text-gray-400 bg-white/30 rounded-2xl border border-dashed border-gray-200">
+                        <i data-lucide="line-chart" class="w-12 h-12 mx-auto mb-3 text-gray-300"></i>
+                        <p>พื้นที่สำหรับแสดงกราฟสรุปผล (สามารถเพิ่ม Chart.js ได้ในภายหลัง)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-requests" class="animate-fade-in hidden-view">
+                <div class="glass-pane p-6 md:p-8 rounded-[2rem] border border-white/60 shadow-sm">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <div>
+                            <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">รายการแจ้งซ่อมทั้งหมด</h2>
+                            <p class="text-sm text-gray-500 mt-1">จ่ายงานให้ช่าง หรือตรวจสอบงานที่ช่างซ่อมเสร็จแล้ว</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="relative w-full md:w-64">
+                                <i data-lucide="search" class="w-5 h-5 absolute left-4 top-3.5 text-gray-400"></i>
+                                <input type="text" class="input-glass py-3 pl-11 text-sm w-full rounded-2xl" placeholder="ค้นหารหัสงาน...">
+                            </div>
+                            <button onclick="loadRequests()" class="p-3 bg-white/60 hover:bg-white text-gray-600 rounded-2xl shadow-sm transition-all" title="รีเฟรชข้อมูล">
+                                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="request-list-container" class="space-y-4">
+                        <div class="text-center py-16 text-gray-400 bg-white/30 rounded-2xl border border-dashed border-gray-300">
+                            <i data-lucide="loader-2" class="w-12 h-12 mx-auto mb-3 text-gray-300 animate-spin"></i>
+                            <p>กำลังดึงข้อมูลรายการแจ้งซ่อม...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="assign-modal" class="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="glass-pane w-full max-w-md p-6 md:p-8 rounded-3xl animate-fade-in shadow-2xl">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-2xl font-bold text-gray-900 tracking-tight">มอบหมายงานให้ช่าง</h3>
+                <button onclick="closeAssignModal()" class="text-gray-400 hover:text-red-500 transition-colors p-2 bg-gray-50 hover:bg-red-50 rounded-full">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <p class="text-sm text-gray-500 mb-6">กรุณาเลือกช่างผู้รับผิดชอบงานนี้ เพื่อให้ระบบแจ้งเตือนไปยังช่างโดยตรง</p>
+            
+            <div class="space-y-4">
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-gray-700 uppercase tracking-wide">เลือกช่างซ่อม</label>
+                    <div class="relative">
+                        <select id="assign-tech-select" class="input-glass cursor-pointer appearance-none text-base bg-white" required>
+                            <option value="">กำลังโหลดรายชื่อช่าง...</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="w-5 h-5 absolute right-4 top-4 text-gray-400 pointer-events-none"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 mt-8">
+                <button onclick="closeAssignModal()" class="flex-1 py-3.5 bg-gray-100 text-gray-700 rounded-2xl font-medium hover:bg-gray-200 transition-colors text-lg">ยกเลิก</button>
+                <button onclick="submitAssignment()" class="flex-1 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold shadow-lg hover:shadow-xl transition-colors flex items-center justify-center gap-2 text-lg">
+                    <i data-lucide="user-check" class="w-5 h-5"></i> มอบหมายงาน
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-root"></div>
+
+    <script>
+        lucide.createIcons();
+
+        // ฟังก์ชันสลับหน้าต่างสำหรับ Manager
+        function switchManagerTab(tabName) {
+            // ซ่อนทุกหน้า
+            document.getElementById('view-dashboard').classList.add('hidden-view');
+            document.getElementById('view-requests').classList.add('hidden-view');
+            
+            // รีเซ็ตปุ่มทั้งหมด
+            const btns = document.querySelectorAll('.mgr-nav-btn');
+            btns.forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/30');
+                btn.classList.add('bg-white/50', 'text-gray-700', 'hover:bg-white', 'hover:text-indigo-600', 'hover:shadow-md');
+            });
+
+            // เปิดหน้าที่เลือก และทำให้ปุ่มเป็นสี Active (Indigo)
+            document.getElementById('view-' + tabName).classList.remove('hidden-view');
+            const activeBtn = document.getElementById('nav-' + tabName);
+            
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-white/50', 'text-gray-700', 'hover:bg-white', 'hover:text-indigo-600', 'hover:shadow-md');
+                activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-500/30');
+            }
+        }
+    </script>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>  
+    <script src="js/manager.js"></script> </body>
+</html>
