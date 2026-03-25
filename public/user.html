@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หน้าหลักผู้ใช้งาน | iMaintain System</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="min-h-screen text-gray-800 relative overflow-x-hidden font-sans bg-[#faf9fe]">
+
+    <div class="aurora-bg">
+        <div class="aurora-blob blob-1"></div>
+        <div class="aurora-blob blob-2"></div>
+        <div class="aurora-blob blob-3"></div>
+    </div>
+
+    <nav class="glass-pane sticky top-0 z-40 px-4 md:px-8 py-3 border-b-0 shadow-sm rounded-b-3xl mx-2 md:mx-6 mt-2">
+        <div class="flex items-center justify-between max-w-[1600px] mx-auto w-full">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-md">
+                    <i data-lucide="wrench" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-gray-900 leading-tight text-lg">iMaintain</h1>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">User Portal</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex flex-col items-end mr-2">
+                    <span id="user-name-display" class="text-sm font-semibold text-gray-800">กำลังโหลด...</span>
+                    <span id="user-dept-display" class="text-xs text-gray-500 font-medium">ผู้ใช้งานทั่วไป</span>
+                </div>
+                <div class="w-10 h-10 bg-white/60 rounded-full flex items-center justify-center border-2 border-white text-blue-600 shadow-sm">
+                    <i data-lucide="user" class="w-5 h-5"></i>
+                </div>
+                <button onclick="logout()" class="p-2.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all" title="ออกจากระบบ">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="w-full max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 mt-6 flex flex-col md:flex-row gap-6 lg:gap-8 items-start mb-10">
+        
+        <aside class="w-full md:w-64 lg:w-72 shrink-0 flex flex-row md:flex-col gap-2 overflow-x-auto no-scrollbar md:sticky md:top-28">
+            <button onclick="switchUserTab('dashboard')" id="nav-dashboard" class="user-nav-btn flex-1 md:flex-none flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 bg-blue-600 text-white shadow-lg shadow-blue-500/30 font-medium text-sm whitespace-nowrap">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> ภาพรวมของฉัน
+            </button>
+            <button onclick="switchUserTab('new-request')" id="nav-new-request" class="user-nav-btn flex-1 md:flex-none flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 bg-white/50 text-gray-700 hover:bg-white hover:text-blue-600 hover:shadow-md border border-transparent font-medium text-sm whitespace-nowrap">
+                <i data-lucide="plus-circle" class="w-5 h-5"></i> แจ้งซ่อมใหม่
+            </button>
+            <button onclick="switchUserTab('history')" id="nav-history" class="user-nav-btn flex-1 md:flex-none flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 bg-white/50 text-gray-700 hover:bg-white hover:text-blue-600 hover:shadow-md border border-transparent font-medium text-sm whitespace-nowrap">
+                <i data-lucide="list" class="w-5 h-5"></i> ประวัติการแจ้งซ่อม
+            </button>
+        </aside>
+
+        <main class="flex-1 w-full relative min-h-[60vh]">
+            
+            <div id="view-dashboard" class="animate-fade-in space-y-6">
+                <div class="glass-pane p-6 lg:p-8 rounded-[2rem] shadow-sm border border-white/60">
+                    <h2 class="text-xl lg:text-2xl font-bold text-gray-900 mb-6">สถิติการแจ้งซ่อมของคุณ</h2>
+                    <div id="user-stats-container" class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
+                        <div class="col-span-full text-center py-6 text-gray-400 bg-white/30 rounded-2xl border border-dashed border-gray-200">
+                            <i data-lucide="bar-chart-2" class="w-8 h-8 mx-auto mb-2 text-gray-300"></i>
+                            ระบบกำลังรวบรวมข้อมูล...
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-pane p-6 lg:p-8 rounded-[2rem] shadow-sm border border-white/60">
+                    <h2 class="text-lg lg:text-xl font-bold text-gray-900 flex items-center gap-2 mb-6">
+                        <i data-lucide="clock" class="w-6 h-6 text-amber-500"></i> งานที่กำลังดำเนินการ
+                    </h2>
+                    <div id="active-requests-container" class="space-y-4">
+                        <div class="text-center py-8 text-gray-400 bg-white/30 rounded-2xl border border-dashed border-gray-300">รอโหลดข้อมูลจากระบบ...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-new-request" class="animate-fade-in hidden-view">
+                <div class="glass-pane p-6 md:p-8 lg:p-10 rounded-[2rem] max-w-3xl border border-white/60 shadow-sm">
+                    <div class="mb-8">
+                        <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">สร้างรายการแจ้งซ่อม</h2>
+                        <p class="text-sm text-gray-500 mt-2">กรุณากรอกรายละเอียดให้ชัดเจนเพื่อให้ช่างเตรียมเครื่องมือได้ถูกต้อง</p>
+                    </div>
+
+                    <form id="form-new-request" onsubmit="submitNewRequest(event)" class="space-y-8">
+                        
+                        <div class="space-y-3">
+                            <label class="text-sm font-semibold text-gray-700 tracking-wide uppercase">ประเภทปัญหา</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                                <label class="cursor-pointer relative">
+                                    <input type="radio" name="req-category" value="ไฟฟ้า" class="peer sr-only" required>
+                                    <div class="py-5 px-2 text-center rounded-2xl bg-white/80 border-2 border-transparent peer-checked:bg-blue-600 peer-checked:text-white text-gray-600 hover:bg-white shadow-sm transition-all duration-200">
+                                        <i data-lucide="lightbulb" class="w-8 h-8 mx-auto mb-2"></i>
+                                        <span class="text-sm font-semibold">ไฟฟ้า</span>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer relative">
+                                    <input type="radio" name="req-category" value="ประปา" class="peer sr-only" required>
+                                    <div class="py-5 px-2 text-center rounded-2xl bg-white/80 border-2 border-transparent peer-checked:bg-blue-600 peer-checked:text-white text-gray-600 hover:bg-white shadow-sm transition-all duration-200">
+                                        <i data-lucide="droplet" class="w-8 h-8 mx-auto mb-2"></i>
+                                        <span class="text-sm font-semibold">ประปา</span>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer relative">
+                                    <input type="radio" name="req-category" value="แอร์" class="peer sr-only" required>
+                                    <div class="py-5 px-2 text-center rounded-2xl bg-white/80 border-2 border-transparent peer-checked:bg-blue-600 peer-checked:text-white text-gray-600 hover:bg-white shadow-sm transition-all duration-200">
+                                        <i data-lucide="snowflake" class="w-8 h-8 mx-auto mb-2"></i>
+                                        <span class="text-sm font-semibold">แอร์</span>
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer relative">
+                                    <input type="radio" name="req-category" value="อื่นๆ" class="peer sr-only" required>
+                                    <div class="py-5 px-2 text-center rounded-2xl bg-white/80 border-2 border-transparent peer-checked:bg-blue-600 peer-checked:text-white text-gray-600 hover:bg-white shadow-sm transition-all duration-200">
+                                        <i data-lucide="hammer" class="w-8 h-8 mx-auto mb-2"></i>
+                                        <span class="text-sm font-semibold">อื่นๆ</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label class="text-sm font-semibold text-gray-700 tracking-wide uppercase">สถานที่ / ห้องที่เกิดปัญหา</label>
+                            <div class="relative">
+                                <select id="req-location" class="input-glass cursor-pointer appearance-none text-base bg-white" required>
+                                    <option value="">กำลังโหลดข้อมูลสถานที่...</option>
+                                </select>
+                                <i data-lucide="chevron-down" class="w-5 h-5 absolute right-4 top-4 text-gray-400 pointer-events-none"></i>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label class="text-sm font-semibold text-gray-700 tracking-wide uppercase">รูปภาพประกอบ (ถ้ามี)</label>
+                            <div class="flex items-center justify-center w-full">
+                                <label for="req-image" class="flex flex-col items-center justify-center w-full h-36 border-2 border-gray-300 border-dashed rounded-2xl cursor-pointer bg-white/50 hover:bg-white transition-all overflow-hidden relative">
+                                    <div id="image-preview-container" class="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <i data-lucide="image-plus" class="w-10 h-10 text-gray-400 mb-3"></i>
+                                        <p class="text-sm text-gray-500"><span class="font-semibold text-blue-600">คลิกเพื่ออัปโหลด</span> หรือลากไฟล์มาวาง</p>
+                                        <p class="text-xs text-gray-400 mt-1">PNG, JPG, GIF (สูงสุด 10MB)</p>
+                                    </div>
+                                    <img id="image-preview" class="absolute inset-0 w-full h-full object-cover hidden" />
+                                    <input id="req-image" type="file" class="hidden" accept="image/*" onchange="previewImage(event)" />
+                                </label>
+                            </div>
+                            <div class="flex justify-end hidden" id="remove-image-btn">
+                                <button type="button" onclick="removeImage()" class="text-xs text-red-500 hover:text-red-700 font-medium">ลบรูปภาพ</button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label class="text-sm font-semibold text-gray-700 tracking-wide uppercase">รายละเอียดปัญหา</label>
+                            <textarea id="req-description" class="input-glass bg-white resize-none h-32 text-base" placeholder="อธิบายลักษณะอาการ หรือสิ่งที่พบเจอ..." required></textarea>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label class="text-sm font-semibold text-gray-700 tracking-wide uppercase">ความเร่งด่วน</label>
+                            <div class="grid grid-cols-3 gap-3">
+                                <label class="cursor-pointer relative">
+                                    <input type="radio" name="req-urgency" value="low" class="peer sr-only" required checked>
+                                    <div class="py-3.5 text-center rounded-xl bg-white/80 border-2 border-transparent peer-checked:bg-green-500 peer-checked:text-white text-gray-600 font-bold transition-all shadow-sm">
+                                        ปกติ
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer relative">
+                                    <input type="radio" name="req-urgency" value="medium" class="peer sr-only">
+                                    <div class="py-3.5 text-center rounded-xl bg-white/80 border-2 border-transparent peer-checked:bg-orange-500 peer-checked:text-white text-gray-600 font-bold transition-all shadow-sm">
+                                        ด่วน
+                                    </div>
+                                </label>
+                                <label class="cursor-pointer relative">
+                                    <input type="radio" name="req-urgency" value="high" class="peer sr-only">
+                                    <div class="py-3.5 text-center rounded-xl bg-white/80 border-2 border-transparent peer-checked:bg-red-500 peer-checked:text-white text-gray-600 font-bold transition-all shadow-sm">
+                                        ฉุกเฉิน
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btn-submit-req" class="w-full py-4 bg-gray-900 hover:bg-black text-white rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 mt-8 text-lg">
+                            <i data-lucide="send" class="w-5 h-5"></i> ส่งข้อมูลแจ้งซ่อม
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="view-history" class="animate-fade-in hidden-view">
+                <div class="glass-pane p-6 lg:p-8 rounded-[2rem] border border-white/60 shadow-sm">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <h2 class="text-xl lg:text-2xl font-bold text-gray-900 tracking-tight">ประวัติการแจ้งซ่อมทั้งหมด</h2>
+                        <div class="relative w-full md:w-80">
+                            <i data-lucide="search" class="w-5 h-5 absolute left-4 top-3.5 text-gray-400"></i>
+                            <input type="text" class="input-glass py-3 pl-11 text-sm w-full rounded-2xl" placeholder="ค้นหาจากรายละเอียด หรือ รหัสซ่อม...">
+                        </div>
+                    </div>
+                    <div id="request-list-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <div class="col-span-full text-center py-16 text-gray-400 bg-white/30 rounded-2xl border border-dashed border-gray-300">
+                            <i data-lucide="loader-2" class="w-12 h-12 mx-auto mb-3 text-gray-300 animate-spin"></i>
+                            <p>กำลังดึงข้อมูลประวัติการแจ้งซ่อม...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function switchUserTab(tabName) {
+            document.getElementById('view-dashboard').classList.add('hidden-view');
+            document.getElementById('view-new-request').classList.add('hidden-view');
+            document.getElementById('view-history').classList.add('hidden-view');
+            
+            const btns = document.querySelectorAll('.user-nav-btn');
+            btns.forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-500/30');
+                btn.classList.add('bg-white/50', 'text-gray-700', 'hover:bg-white', 'hover:text-blue-600', 'hover:shadow-md');
+            });
+
+            document.getElementById('view-' + tabName).classList.remove('hidden-view');
+            const activeBtn = document.getElementById('nav-' + tabName);
+            
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-white/50', 'text-gray-700', 'hover:bg-white', 'hover:text-blue-600', 'hover:shadow-md');
+                activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-lg', 'shadow-blue-500/30');
+            }
+        }
+
+        // ฟังก์ชันแสดงพรีวิวรูปภาพก่อนอัปโหลด
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('image-preview');
+                    const container = document.getElementById('image-preview-container');
+                    const removeBtn = document.getElementById('remove-image-btn');
+                    
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                    container.classList.add('opacity-0'); // ซ่อนข้อความ+ไอคอน
+                    removeBtn.classList.remove('hidden'); // แสดงปุ่มลบรูป
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // ฟังก์ชันลบรูปภาพที่เลือกไว้
+        function removeImage() {
+            const input = document.getElementById('req-image');
+            const preview = document.getElementById('image-preview');
+            const container = document.getElementById('image-preview-container');
+            const removeBtn = document.getElementById('remove-image-btn');
+
+            input.value = ''; // เคลียร์ไฟล์
+            preview.src = '';
+            preview.classList.add('hidden');
+            container.classList.remove('opacity-0');
+            removeBtn.classList.add('hidden');
+        }
+    </script>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>  
+    <script src="js/user.js"></script>  
+</body>
+</html>

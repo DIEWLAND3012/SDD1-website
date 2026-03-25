@@ -1,0 +1,158 @@
+/* =========================================
+   สเตปที่ 6: style.css (The Digital Aurora System)
+   อ้างอิงจาก DESIGN.md: The Translucent Editorial
+   ========================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap');
+
+/* ─── 1. DESIGN TOKENS (ตัวแปรสีและสเปก) ─── */
+:root {
+    /* Brand Colors (Apple-inspired) */
+    --primary: #0058bc;
+    --secondary: #006e28;
+    --tertiary: #bc000a;
+    
+    /* Surface Colors */
+    --surface: #faf9fe;
+    --on-surface: #1d1d1f;
+    --on-surface-variant: #86868b;
+    
+    /* Glassmorphism Specs */
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-blur: blur(25px) saturate(180%);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.04);
+    
+    /* Corner Radius (โค้งมนนุ่มนวล) */
+    --radius-sm: 0.5rem;
+    --radius-md: 1.5rem;
+    --radius-lg: 2rem;
+    --radius-xl: 3rem;
+}
+
+/* ─── 2. BASE STYLES ─── */
+body {
+    font-family: 'Noto Sans Thai', sans-serif;
+    background-color: var(--surface);
+    color: var(--on-surface);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+}
+
+::placeholder {
+    color: var(--on-surface-variant);
+    opacity: 0.6;
+}
+
+/* Custom Scrollbar (ซ่อนเส้นขอบแข็งๆ ของเบราว์เซอร์) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+/* ─── 3. THE DIGITAL AURORA (พื้นหลังเคลื่อนไหว) ─── */
+.aurora-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -10;
+    overflow: hidden;
+    background: var(--surface);
+    pointer-events: none;
+}
+
+.aurora-blob {
+    position: absolute;
+    filter: blur(90px);
+    opacity: 0.5;
+    border-radius: 50%;
+    animation: floatBlob 25s infinite ease-in-out alternate;
+}
+
+/* สีของ Aurora (ปรับแต่งให้เข้ากับโทนของระบบ) */
+.blob-1 { top: -20%; left: -10%; width: 60vw; height: 60vw; background: #e0eaff; animation-delay: 0s; }
+.blob-2 { bottom: -20%; right: -10%; width: 70vw; height: 70vw; background: #dcfce7; animation-delay: -5s; }
+.blob-3 { top: 30%; left: 50%; width: 50vw; height: 50vw; background: #fee2e2; animation-delay: -10s; }
+
+@keyframes floatBlob {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(15%, 15%) scale(1.15); }
+}
+
+/* ─── 4. GLASSMORPHISM COMPONENTS ─── */
+/* แผ่นกระจกหลัก (ใช้ทำ Layout ใหญ่ๆ) */
+.glass-pane {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+
+/* ช่องกรอกข้อมูลแบบกระจก */
+.input-glass {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--on-surface);
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.input-glass:focus {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(0, 88, 188, 0.1);
+}
+
+/* ─── 5. UTILITIES & ANIMATIONS ─── */
+.hidden-view {
+    display: none !important;
+}
+
+/* อนิเมชัน Fade In อย่างนุ่มนวลเวลาเปลี่ยนหน้า/โหลดข้อมูล */
+.animate-fade-in {
+    animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* อนิเมชันสำหรับ Toast Notification (ใช้คู่กับ utils.js) */
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

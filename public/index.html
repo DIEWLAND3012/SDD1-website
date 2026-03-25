@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iMaintain System | เข้าสู่ระบบ หรือ ลงทะเบียน</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        /* CSS เฉพาะสำหรับหน้านี้: สไตล์ปุ่ม Pill Switcher ที่ดูนุ่มนวล */
+        .auth-pill-active {
+            background-color: white;
+            color: #1d1d1f;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+        }
+        .auth-pill-inactive {
+            color: #86868b;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+
+    <div class="aurora-bg">
+        <div class="aurora-blob blob-1"></div>
+        <div class="aurora-blob blob-2"></div>
+        <div class="aurora-blob blob-3"></div>
+    </div>
+
+    <main class="glass-pane w-full max-w-lg p-6 md:p-10 rounded-[2.5rem] flex flex-col items-center gap-8 relative z-10 animate-fade-in shadow-2xl">
+        
+        <div class="text-center">
+            <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-[1.2rem] flex items-center justify-center mx-auto mb-4 shadow-xl shadow-purple-500/30 transform -rotate-3">
+                <i data-lucide="wrench" class="w-8 h-8 text-white"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 tracking-tight">iMaintain System</h1>
+            <p class="text-gray-500 mt-2 text-sm">ระบบแจ้งซ่อมและบริหารจัดการทรัพยากร</p>
+        </div>
+
+        <div class="w-full bg-gray-100/60 p-1.5 rounded-2xl flex border border-gray-200/50 backdrop-blur-sm shadow-inner No-Line">
+            <button id="pill-login" onclick="switchAuthMode('login')" class="flex-1 py-3 text-center rounded-xl text-sm transition-all duration-300 auth-pill-active">
+                <i data-lucide="log-in" class="w-4 h-4 inline-block mr-1.5 -mt-0.5"></i> เข้าสู่ระบบ
+            </button>
+            <button id="pill-signup" onclick="switchAuthMode('signup')" class="flex-1 py-3 text-center rounded-xl text-sm transition-all duration-300 auth-pill-inactive">
+                <i data-lucide="user-plus" class="w-4 h-4 inline-block mr-1.5 -mt-0.5"></i> ลงทะเบียนใหม่
+            </button>
+        </div>
+
+        <div id="content-login" class="w-full flex flex-col gap-6">
+            <h2 class="text-xl font-bold text-gray-900">กรุณาเข้าสู่ระบบ</h2>
+            
+            <form id="form-login" onsubmit="handleLogin(event)" class="flex flex-col gap-4">
+                <div class="space-y-1">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                            <i data-lucide="mail" class="w-5 h-5"></i>
+                        </div>
+                        <input type="email" id="login-email" class="input-glass pl-12" placeholder="อีเมล (เช่น user@school.ac.th)" required>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                            <i data-lucide="lock" class="w-5 h-5"></i>
+                        </div>
+                        <input type="password" id="login-password" class="input-glass pl-12" placeholder="รหัสผ่าน" required>
+                    </div>
+                </div>
+
+                <div id="login-error" class="hidden bg-red-50 text-red-600 text-xs p-3 rounded-xl border border-red-100 flex items-center gap-2 font-medium animate-fade-in">
+                    <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i> อีเมลหรือรหัสผ่านไม่ถูกต้อง
+                </div>
+
+                <button type="submit" id="btn-login-submit" class="mt-2 w-full py-4 bg-gray-900 hover:bg-black text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all flex justify-center items-center gap-2">
+                    เข้าสู่ระบบ <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </form>
+        </div>
+
+        <div id="content-signup" class="w-full flex flex-col gap-6 hidden-view">
+            <h2 class="text-xl font-bold text-gray-900">สร้างบัญชีผู้ใช้ใหม่</h2>
+            
+            <form id="form-signup" onsubmit="handleSignUp(event)" class="flex flex-col gap-4">
+                
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                        <i data-lucide="user" class="w-5 h-5"></i>
+                    </div>
+                    <input type="text" id="signup-name" class="input-glass pl-12" placeholder="ชื่อ-นามสกุล ภาษาไทย" required>
+                </div>
+
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                        <i data-lucide="id-card" class="w-5 h-5"></i>
+                    </div>
+                    <input type="text" id="signup-student-id" class="input-glass pl-12" placeholder="รหัสนักศึกษา หรือ รหัสพนักงาน" required>
+                </div>
+
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                        <i data-lucide="building" class="w-5 h-5"></i>
+                    </div>
+                    <select id="signup-department" class="input-glass pl-12 appearance-none text-gray-500 cursor-pointer" required>
+                        <option value="" disabled selected>เลือกแผนก/คณะ ของคุณ</option>
+                        <option value="คณะวิศวกรรมศาสตร์">คณะวิศวกรรมศาสตร์</option>
+                        <option value="คณะบริหารธุรกิจ">คณะบริหารธุรกิจ</option>
+                        <option value="คณะเทคโนโลยีสารสนเทศ">คณะเทคโนโลยีสารสนเทศ</option>
+                        <option value="สำนักงานส่วนกลาง">สำนักงานส่วนกลาง</option>
+                        <option value="อื่นๆ">อื่นๆ</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                        <i data-lucide="mail" class="w-5 h-5"></i>
+                    </div>
+                    <input type="email" id="signup-email" class="input-glass pl-12" placeholder="อีเมลองค์กร (เช่น user@school.ac.th)" required>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                            <i data-lucide="lock" class="w-5 h-5"></i>
+                        </div>
+                        <input type="password" id="signup-password" class="input-glass pl-12" placeholder="รหัสผ่าน" required>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                            <i data-lucide="check-circle" class="w-5 h-5"></i>
+                        </div>
+                        <input type="password" id="signup-confirm-password" class="input-glass pl-12" placeholder="ยืนยันรหัสผ่าน" required>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-signup-submit" class="mt-3 w-full py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-medium shadow-md hover:shadow-lg transition-all flex justify-center items-center gap-2">
+                    <i data-lucide="check" class="w-5 h-5"></i> ยืนยันการลงทะเบียน
+                </button>
+            </form>
+        </div>
+
+        <div class="text-center mt-2 text-xs text-gray-400">
+            iMaintain System &copy; 2024 | เทคโนโลยีเพื่อการบริหารจัดการ
+        </div>
+    </main>
+
+    <script>
+        // เริ่มต้นไอคอน Lucide
+        lucide.createIcons();
+
+        // **ใหม่** Logic การสลับหน้าจอกลาง (inline เพื่อความเร็ว)
+        function switchAuthMode(mode) {
+            const loginContent = document.getElementById('content-login');
+            const signupContent = document.getElementById('content-signup');
+            const pillLogin = document.getElementById('pill-login');
+            const pillSignup = document.getElementById('pill-signup');
+
+            if (mode === 'login') {
+                // แสดง Login, ซ่อน Signup
+                loginContent.classList.remove('hidden-view');
+                signupContent.classList.add('hidden-view');
+                
+                // อัปเดตสไตล์ปุ่ม Pill
+                pillLogin.classList.remove('auth-pill-inactive');
+                pillLogin.classList.add('auth-pill-active');
+                pillSignup.classList.remove('auth-pill-active');
+                pillSignup.classList.add('auth-pill-inactive');
+            } else {
+                // แสดง Signup, ซ่อน Login
+                loginContent.classList.add('hidden-view');
+                signupContent.classList.remove('hidden-view');
+                
+                // อัปเดตสไตล์ปุ่ม Pill
+                pillLogin.classList.remove('auth-pill-active');
+                pillLogin.classList.add('auth-pill-inactive');
+                pillSignup.classList.remove('auth-pill-inactive');
+                pillSignup.classList.add('auth-pill-active');
+            }
+            // รันไอคอนใหม่อีกครั้ง เผื่อมีการโหลดคอนเทนต์ใหม่
+            lucide.createIcons();
+        }
+    </script>
+    
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>
