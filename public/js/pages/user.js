@@ -160,37 +160,26 @@ function handleImageUpload(event) {
 async function submitNewRequest(event) {
     event.preventDefault();
     
-    const btn = document.getElementById('btn-submit-req');
-    const originalText = btn.innerHTML;
-    
-    const payload = {
-        category: document.getElementById('req-category').value,
-        urgency: document.getElementById('req-urgency').value,
-        location_id: document.getElementById('req-location').value,
-        description: document.getElementById('req-description').value,
-        image_base64: selectedFileBase64
-    };
+        // ดึงค่าหมวดหมู่และความเร่งด่วนจาก Radio Button ที่ถูกเลือก
+    const category = document.querySelector('input[name="req-category"]:checked').value;
+    const urgency = document.querySelector('input[name="req-urgency"]:checked').value;
 
-    if (!payload.category || !payload.location_id || !payload.description) {
-        toast('กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
-        return;
+    // วิธีดึงไฟล์รูปภาพเพื่อเตรียมส่งไป Backend
+    const imageFile = document.getElementById('req-image').files[0];
+
+    // -- ตัวอย่างการจัดการข้อมูล --
+    // ถ้า Backend ของคุณรองรับ FormData (แนะนำสำหรับการอัปโหลดรูป)
+    const formData = new FormData();
+    formData.append('category', category);
+    formData.append('location', document.getElementById('req-location').value);
+    formData.append('description', document.getElementById('req-description').value);
+    formData.append('urgency', urgency);
+    if (imageFile) {
+        formData.append('image', imageFile); 
     }
 
-    btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> กำลังส่งข้อมูล...`;
-    btn.disabled = true;
-
-    try {
-        await api('POST', '/requests', payload);
-        toast('ส่งแจ้งซ่อมสำเร็จ!', 'success');
-        toggleView('list');
-        await loadMyRequests(); // โหลดข้อมูลใหม่
-    } catch (error) {
-        toast('เกิดข้อผิดพลาด: ' + error.message, 'error');
-    } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-        refreshIcons();
-    }
+    // แล้วใช้ fetch แบบไม่เซ็ต 'Content-Type': 'application/json' 
+    // เพื่อให้เบราว์เซอร์จัดการ Boundary ของ FormData อัตโนมัติ
 }
 
 // ==========================================

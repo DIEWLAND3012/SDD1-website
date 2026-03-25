@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หน้าต่างช่างซ่อม | iMaintain System</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="min-h-screen text-gray-800 relative overflow-x-hidden font-sans bg-[#faf9fe]">
+
+    <div class="aurora-bg">
+        <div class="aurora-blob blob-1"></div>
+        <div class="aurora-blob blob-2"></div>
+        <div class="aurora-blob blob-3"></div>
+    </div>
+
+    <nav class="glass-pane sticky top-0 z-40 px-4 md:px-8 py-3 border-b-0 shadow-sm rounded-b-3xl mx-2 md:mx-6 mt-2">
+        <div class="flex items-center justify-between max-w-[1600px] mx-auto w-full">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-md">
+                    <i data-lucide="settings" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-gray-900 leading-tight text-lg">iMaintain</h1>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Technician Portal</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex flex-col items-end mr-2">
+                    <span id="tech-name-display" class="text-sm font-semibold text-gray-800">กำลังโหลด...</span>
+                    <span id="tech-dept-display" class="text-xs text-orange-600 font-medium">ทีมช่างซ่อมบำรุง</span>
+                </div>
+                <div class="w-10 h-10 bg-white/60 rounded-full flex items-center justify-center border-2 border-white text-orange-600 shadow-sm">
+                    <i data-lucide="wrench" class="w-5 h-5"></i>
+                </div>
+                <button onclick="logout()" class="p-2.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all" title="ออกจากระบบ">
+                    <i data-lucide="log-out" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="w-full max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8 mt-6 flex flex-col md:flex-row gap-6 lg:gap-8 items-start mb-10">
+        
+        <aside class="w-full md:w-64 lg:w-72 shrink-0 flex flex-row md:flex-col gap-2 overflow-x-auto no-scrollbar md:sticky md:top-28">
+            <button onclick="switchTechTab('dashboard')" id="nav-dashboard" class="tech-nav-btn flex-1 md:flex-none flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 bg-orange-500 text-white shadow-lg shadow-orange-500/30 font-medium text-sm whitespace-nowrap">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> ภาพรวมงานของฉัน
+            </button>
+            <button onclick="switchTechTab('active-jobs')" id="nav-active-jobs" class="tech-nav-btn flex-1 md:flex-none flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 bg-white/50 text-gray-700 hover:bg-white hover:text-orange-600 hover:shadow-md border border-transparent font-medium text-sm whitespace-nowrap">
+                <i data-lucide="clipboard-list" class="w-5 h-5"></i> คิวงานที่ต้องทำ
+            </button>
+            <button onclick="switchTechTab('history')" id="nav-history" class="tech-nav-btn flex-1 md:flex-none flex items-center gap-3 px-5 py-3.5 rounded-2xl transition-all duration-300 bg-white/50 text-gray-700 hover:bg-white hover:text-orange-600 hover:shadow-md border border-transparent font-medium text-sm whitespace-nowrap">
+                <i data-lucide="check-circle" class="w-5 h-5"></i> ประวัติการซ่อม
+            </button>
+        </aside>
+
+        <main class="flex-1 w-full relative min-h-[60vh]">
+            
+            <div id="view-dashboard" class="animate-fade-in space-y-6">
+                <div class="glass-pane p-6 lg:p-8 rounded-[2rem] shadow-sm border border-white/60">
+                    <h2 class="text-xl lg:text-2xl font-bold text-gray-900 mb-6">สถิติงานซ่อมของคุณ</h2>
+                    <div id="tech-stats-container" class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
+                        <div class="col-span-full text-center py-6 text-gray-400 bg-white/30 rounded-2xl border border-dashed border-gray-200">
+                            <i data-lucide="bar-chart-2" class="w-8 h-8 mx-auto mb-2 text-gray-300"></i>
+                            ระบบกำลังรวบรวมข้อมูล...
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-pane p-6 lg:p-8 rounded-[2rem] shadow-sm border border-white/60">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-lg lg:text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <i data-lucide="alert-triangle" class="w-6 h-6 text-red-500"></i> งานด่วน / ฉุกเฉิน
+                        </h2>
+                    </div>
+                    <div id="urgent-jobs-container" class="space-y-4">
+                        <div class="text-center py-8 text-gray-400 bg-white/30 rounded-2xl border border-dashed border-gray-300">ไม่มีงานด่วนในขณะนี้</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-active-jobs" class="animate-fade-in hidden-view">
+                <div class="glass-pane p-6 md:p-8 rounded-[2rem] border border-white/60 shadow-sm">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h2 class="text-2xl lg:text-3xl font-bold text-gray-900 tracking-tight">คิวงานที่ต้องทำ</h2>
+                            <p class="text-sm text-gray-500 mt-1">คลิกที่การ์ดเพื่อดูรายละเอียดและอัปเดตสถานะงาน</p>
+                        </div>
+                        <button onclick="loadTechJobs()" class="p-2 bg-white/60 hover:bg-white text-gray-600 rounded-xl shadow-sm transition-all" title="รีเฟรชข้อมูล">
+                            <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <div id="tech-jobs-list" class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                        <div class="col-span-full text-center py-16 text-gray-400 bg-white/30 rounded-2xl border border-dashed border-gray-300">
+                            <i data-lucide="loader-2" class="w-12 h-12 mx-auto mb-3 text-gray-300 animate-spin"></i>
+                            <p>กำลังดึงข้อมูลคิวงาน...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-history" class="animate-fade-in hidden-view">
+                <div class="glass-pane p-6 lg:p-8 rounded-[2rem] border border-white/60 shadow-sm">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <h2 class="text-xl lg:text-2xl font-bold text-gray-900 tracking-tight">ประวัติงานที่ซ่อมเสร็จแล้ว</h2>
+                        <div class="relative w-full md:w-80">
+                            <i data-lucide="search" class="w-5 h-5 absolute left-4 top-3.5 text-gray-400"></i>
+                            <input type="text" class="input-glass py-3 pl-11 text-sm w-full rounded-2xl" placeholder="ค้นหาจากรหัสงาน หรือสถานที่...">
+                        </div>
+                    </div>
+                    
+                    <div id="tech-history-list" class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+                        <div class="col-span-full text-center py-16 text-gray-400 bg-white/30 rounded-2xl border border-dashed border-gray-300">
+                            <p>กำลังดึงข้อมูลประวัติ...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="job-detail-modal" class="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="glass-pane w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl animate-fade-in shadow-2xl flex flex-col">
+            
+            <div class="sticky top-0 bg-white/80 backdrop-blur-md p-6 border-b border-gray-100 flex items-center justify-between z-10">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        รายละเอียดงาน <span id="modal-job-id" class="text-sm bg-gray-100 text-gray-600 px-3 py-1 rounded-full font-mono">REQ-0000</span>
+                    </h3>
+                </div>
+                <button onclick="closeJobModal()" class="text-gray-400 hover:text-red-500 transition-colors p-2 bg-gray-50 hover:bg-red-50 rounded-full">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-6">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
+                        <p class="text-xs text-blue-500 font-semibold uppercase tracking-wider mb-1">ผู้แจ้งซ่อม</p>
+                        <p id="modal-user-name" class="font-medium text-gray-900">กำลังโหลด...</p>
+                        <p id="modal-user-phone" class="text-sm text-gray-500 flex items-center gap-1 mt-1"><i data-lucide="phone" class="w-3 h-3"></i> -</p>
+                    </div>
+                    <div class="bg-orange-50/50 p-4 rounded-2xl border border-orange-100">
+                        <p class="text-xs text-orange-500 font-semibold uppercase tracking-wider mb-1">สถานที่ / ห้อง</p>
+                        <p id="modal-location" class="font-medium text-gray-900">กำลังโหลด...</p>
+                        <p id="modal-urgency" class="text-sm font-bold mt-1">-</p>
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-sm font-semibold text-gray-700 uppercase mb-2">รายละเอียดปัญหา</p>
+                    <div class="bg-gray-50 p-4 rounded-2xl text-gray-700 text-sm border border-gray-200" id="modal-description">
+                        -
+                    </div>
+                </div>
+
+                <div id="modal-image-container" class="hidden">
+                    <p class="text-sm font-semibold text-gray-700 uppercase mb-2 flex items-center gap-2">
+                        <i data-lucide="image" class="w-4 h-4"></i> รูปภาพประกอบ
+                    </p>
+                    <div class="w-full h-48 md:h-64 bg-black/5 rounded-2xl overflow-hidden border border-gray-200 flex items-center justify-center">
+                        <img id="modal-image" src="" alt="ภาพประกอบการแจ้งซ่อม" class="w-full h-full object-contain cursor-pointer" onclick="window.open(this.src)">
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2 text-center">คลิกที่รูปเพื่อดูขนาดเต็ม</p>
+                </div>
+
+                <hr class="border-gray-200 border-dashed">
+
+                <form id="form-update-job" onsubmit="updateJobStatus(event)" class="space-y-4">
+                    <input type="hidden" id="update-job-id">
+                    
+                    <div class="space-y-2">
+                        <label class="text-sm font-semibold text-gray-700 uppercase">อัปเดตสถานะงาน</label>
+                        <div class="relative">
+                            <select id="update-status" class="input-glass cursor-pointer appearance-none text-base font-medium" required>
+                                <option value="pending">🟡 รอดำเนินการ (รอช่างรับงาน)</option>
+                                <option value="in_progress">🔵 กำลังดำเนินการ (กำลังซ่อม)</option>
+                                <option value="completed">🟢 เสร็จสิ้น (ซ่อมเรียบร้อย)</option>
+                            </select>
+                            <i data-lucide="chevron-down" class="w-5 h-5 absolute right-4 top-4 text-gray-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-sm font-semibold text-gray-700 uppercase">บันทึกการปฏิบัติงาน / อะไหล่ที่ใช้ (ถ้ามี)</label>
+                        <textarea id="update-note" class="input-glass resize-none h-24 text-sm" placeholder="ระบุสิ่งที่แก้ไข หรืออะไหล่ที่เบิกใช้..."></textarea>
+                    </div>
+
+                    <button type="submit" class="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 text-lg mt-4">
+                        <i data-lucide="save" class="w-5 h-5"></i> บันทึกการอัปเดต
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-root"></div>
+
+    <script>
+        lucide.createIcons();
+
+        // ฟังก์ชันสลับหน้าต่าง (UI)
+        function switchTechTab(tabName) {
+            document.getElementById('view-dashboard').classList.add('hidden-view');
+            document.getElementById('view-active-jobs').classList.add('hidden-view');
+            document.getElementById('view-history').classList.add('hidden-view');
+            
+            const btns = document.querySelectorAll('.tech-nav-btn');
+            btns.forEach(btn => {
+                btn.classList.remove('bg-orange-500', 'text-white', 'shadow-lg', 'shadow-orange-500/30');
+                btn.classList.add('bg-white/50', 'text-gray-700', 'hover:bg-white', 'hover:text-orange-600', 'hover:shadow-md');
+            });
+
+            document.getElementById('view-' + tabName).classList.remove('hidden-view');
+            const activeBtn = document.getElementById('nav-' + tabName);
+            
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-white/50', 'text-gray-700', 'hover:bg-white', 'hover:text-orange-600', 'hover:shadow-md');
+                activeBtn.classList.add('bg-orange-500', 'text-white', 'shadow-lg', 'shadow-orange-500/30');
+            }
+        }
+
+        // เปิด/ปิด Modal อัปเดตงาน (ใช้เป็นโครงไว้รอ technician.js มาควบคุม)
+        function openJobModal() {
+            document.getElementById('job-detail-modal').classList.remove('hidden');
+        }
+        function closeJobModal() {
+            document.getElementById('job-detail-modal').classList.add('hidden');
+        }
+    </script>
+
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>  
+    <script src="js/technician.js"></script> </body>
+</html>
