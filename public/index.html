@@ -1,69 +1,85 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบแจ้งซ่อม - เข้าสู่ระบบ (iMaintain)</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <title>ระบบแจ้งซ่อมบำรุง (Maintenance System)</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'IBM Plex Sans Thai', 'sans-serif'],
-          },
-          colors: {
-            primary: {
-              50: '#eef2ff',
-              100: '#e0e7ff',
-              500: '#6366f1', // Indigo 500
-              600: '#4f46e5', // Indigo 600
-            }
-          }
-        }
-      }
-    }
-  </script>
-
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="style.css">
 </head>
+<body class="text-slate-800 antialiased overflow-hidden">
 
-<body class="text-slate-800 antialiased min-h-screen relative">
-  
-  <div class="aurora-bg">
-    <div class="aurora-blob aurora-blob-1"></div>
-    <div class="aurora-blob aurora-blob-2"></div>
-    <div class="aurora-blob aurora-blob-3"></div>
+  <div class="flex h-screen w-full">
+    
+    <aside id="app-sidebar" class="hidden w-64 bg-slate-900 text-slate-300 flex-col transition-all duration-300 z-20 shadow-xl shrink-0">
+      <div class="p-6 flex items-center gap-3 border-b border-slate-800">
+        <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center text-white font-bold">M</div>
+        <h1 class="text-lg font-bold text-white tracking-wide">HelpDesk<span class="text-indigo-400">.</span></h1>
+      </div>
+      
+      <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1 no-scrollbar" id="sidebar-menu">
+        </nav>
+      
+      <div class="p-4 border-t border-slate-800">
+        <button onclick="logout()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+          ออกจากระบบ
+        </button>
+      </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
+      
+      <header id="app-topbar" class="hidden h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 lg:px-6 z-10 shrink-0 shadow-sm">
+        <div class="flex items-center gap-4">
+          <button onclick="toggleSidebar()" class="lg:hidden p-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3 text-right">
+            <div class="hidden sm:block">
+              <p id="topbar-user-name" class="text-sm font-bold text-slate-700">ผู้ใช้งาน</p>
+              <p id="topbar-user-role" class="text-xs text-slate-500 capitalize">Role</p>
+            </div>
+            <div id="topbar-user-avatar" class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm border border-indigo-200 shadow-sm">U</div>
+          </div>
+        </div>
+      </header>
+
+      <main id="page-content" class="flex-1 overflow-y-auto overflow-x-hidden bg-slate-50 relative p-4 lg:p-6 no-scrollbar">
+        <div class="flex h-full items-center justify-center">
+          <div class="text-center">
+            <svg class="w-10 h-10 animate-spin text-indigo-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <p class="text-slate-500 font-medium">กำลังเตรียมระบบ...</p>
+          </div>
+        </div>
+      </main>
+
+    </div>
   </div>
 
-  <div id="root" class="relative z-10 w-full min-h-screen flex items-center justify-center p-4"></div>
+  <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-10 hidden lg:hidden backdrop-blur-sm transition-opacity opacity-0"></div>
 
-  <script src="js/code.js"></script>
-  <script src="js/auth.js"></script>
+  <script src="1.Login.js"></script>
+  <script src="2.Dashboard.js"></script>
+  <script src="3.RequestList.js"></script>
+  <script src="4.CreateRequest.js"></script>
+  <script src="5.RequestDetail.js"></script>
+  <script src="6.TechnicianJobs.js"></script>
+  <script src="7.UpdateStatus.js"></script>
+  <script src="8.History.js"></script>
+  <script src="9.Reports.js"></script>
+  <script src="10.Settings.js"></script>
+  <script src="11.SystemLog.js"></script>
+  <script src="12.Users.js"></script>
   
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // ตรวจสอบว่ามี Token และ User ในระบบหรือไม่
-      if (window.APP && APP.user && localStorage.getItem('APP_TOKEN')) {
-        // ถ้ามีให้ Redirect ไปหน้าตาม Role ทันที
-        window.location.href = `${APP.user.role}.html`;
-      } else {
-        // ถ้าไม่มี ให้เรียกฟังก์ชันโชว์หน้า Login/Register จาก auth.js
-        if(typeof showAuth === 'function') {
-          showAuth();
-        } else {
-          console.error("ไม่พบฟังก์ชัน showAuth() โปรดตรวจสอบไฟล์ auth.js");
-        }
-      }
-    });
-  </script>
-</body>
+  <script src="app.js"></script>
 
+</body>
 </html>

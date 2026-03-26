@@ -1,311 +1,124 @@
-/* ═══════════════════════════════════════
-   API FETCH CONSTANTS
-═══════════════════════════════════════ */
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-  ? 'http://127.0.0.1:5001/sddi-project/asia-east1/api' 
-  : '/api'; 
+/* =========================================
+   CORE SYSTEM LOGIC (code.js)
+   จัดการ Global State, API Fetch และ Utilities
+========================================= */
 
-const USE_RELATIVE_API = true; 
-const getApiUrl = (endpoint) => USE_RELATIVE_API ? `/api${endpoint}` : `${API_BASE}${endpoint}`;
+// 1. ตั้งค่า URL ของ API (แก้ไขให้ตรงกับ Backend ของคุณ)
+// ถ้าใช้ระบบ Path เดียวกัน (เช่น Node.js) ปล่อยว่างไว้ได้เลย
+const API_BASE = ''; 
 
+// 2. Global State สำหรับเก็บข้อมูลที่ต้องใช้ร่วมกันทั้งแอป
+window.APP = {
+  user: null,
+  // สามารถเพิ่ม State อื่นๆ ที่ต้องการแชร์ข้ามไฟล์ได้ที่นี่
+};
+
+// =========================================
+// STATE MANAGEMENT
+// =========================================
+
+// โหลดข้อมูลผู้ใช้จาก LocalStorage (ถ้ามี)
+function loadApp() {
+  const storedApp = localStorage.getItem('APP_STATE');
+  if (storedApp) {
+    try {
+      window.APP = JSON.parse(storedApp);
+    } catch (e) {
+      console.error("Failed to parse APP_STATE", e);
+    }
+  }
+}
+
+// บันทึกข้อมูลผู้ใช้ลง LocalStorage
+function saveApp() {
+  localStorage.setItem('APP_STATE', JSON.stringify(window.APP));
+}
+
+// =========================================
+// API COMMUNICATION
+// =========================================
+
+/**
+ * ฟังก์ชันหลักสำหรับเรียกใช้งาน API
+ * @param {string} endpoint - ตัวอย่าง: '/auth/login' หรือ '/requests'
+ * @param {object} options - Method, Body, Headers
+ * @returns {Promise<any>} - ข้อมูล JSON ที่ได้จาก Server
+ */
 async function apiFetch(endpoint, options = {}) {
   const token = localStorage.getItem('APP_TOKEN');
-  const headers = { 'Content-Type': 'application/json' };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
   
-  if (options.body instanceof FormData) {
-    delete headers['Content-Type']; 
-  }
-
-  const res = await fetch(getApiUrl(endpoint), { ...options, headers: { ...headers, ...options.headers } });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Server Error');
-  return data;
-}
-
-async function uploadMedia(file) {
-  const formData = new FormData();
-  formData.append('file', file);
-  return apiFetch('/media/upload', {
-    method: 'POST',
-    body: formData
-  });
-}
-
-function daysAgo(n){const d=new Date();d.setDate(d.getDate()-n);return d.toISOString();}
-function isoDate(d){return d.toISOString();}
-
-/* ═══════════════════════════════════════
-   APP STATE
-═══════════════════════════════════════ */
-let APP = JSON.parse(localStorage.getItem('APP_DATA')) || {user:null,page:null,notifOpen:false}; 
-function saveApp() { localStorage.setItem('APP_DATA', JSON.stringify(APP)); }
-
-/* ═══════════════════════════════════════
-   HELPERS & UI
-═══════════════════════════════════════ */
-function fmtDate(d,short=false){
-  if(!d)return'–';
-  const dt=new Date(d);
-  if(short)return dt.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'2-digit'});
-  return dt.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});
-}
-function timeAgo(d){
-  if(!d)return'ยังไม่เคย';
-  const m=Math.floor((Date.now()-new Date(d))/60000);
-  if(m<1)return'เมื่อกี้';if(m<60)return`${m} นาทีที่แล้ว`;
-  const h=Math.floor(m/60);if(h<24)return`${h} ชั่วโมงที่แล้ว`;
-  return`${Math.floor(h/24)} วันที่แล้ว`;
-}
-function sBadge(s){
-  const m={'รอดำเนินการ':['b-amber','⏳'],'กำลังดำเนินการ':['b-blue','⚙️'],'รอตรวจสอบ':['b-violet','🔍'],'เสร็จสมบูรณ์':['b-green','✅'],'ต้องส่งซ่อมภายนอก':['b-red','🔀']};
-  const[c,i]=m[s]||['b-gray','?'];return`<span class="badge ${c}">${i} ${s}</span>`;
-}
-function uBadge(u){
-  const m={'ฉุกเฉิน':'b-red','เร่งด่วน':'b-amber','ปกติ':'b-green','ไม่เร่งด่วน':'b-gray'};
-  return`<span class="badge ${m[u]||'b-gray'}">${u}</span>`;
-}
-function roleBadge(r){
-  const m={admin:['b-red','🛡️','แอดมิน'],manager:['b-violet','📋','ผู้จัดการ'],technician:['b-blue','🔧','ช่าง'],user:['b-gray','👤','ผู้ใช้']};
-  const[c,i,l]=m[r]||['b-gray','?',r];return`<span class="badge ${c}">${i} ${l}</span>`;
-}
-function catIcon(c){return{'ไฟฟ้า':'⚡','ประปา':'💧','โครงสร้าง':'🏗️','อุปกรณ์อิเล็กทรอนิกส์':'💻','เครื่องปรับอากาศ':'❄️'}[c]||'🔧';}
-function roleTH(r){return{admin:'ผู้ดูแลระบบ',manager:'ผู้จัดการ',technician:'ช่างซ่อม',user:'ผู้ใช้งาน'}[r]||r;}
-function loadingState(){return`<div class="loading-state"><div class="spinner"></div><span class="text-muted">กำลังโหลด...</span></div>`;}
-function emptyState(i,t){return`<div class="empty"><div class="ei">${i}</div><div>${t}</div></div>`;}
-
-function toast(msg,type='ok'){
-  let c=document.getElementById('toasts');
-  if(!c){ c=document.createElement('div'); c.id='toasts'; document.body.appendChild(c); }
-  const el=document.createElement('div');
-  const icons={ok:'✅',err:'❌',warn:'⚠️',info:'ℹ️'};
-  el.className=`toast t-${type}`;
-  el.innerHTML=`<span>${icons[type]||'ℹ️'}</span><div>${msg}</div>`;
-  c.appendChild(el);setTimeout(()=>el.remove(),3500);
-}
-function openModal(html){
-  closeModal();
-  const bd=document.createElement('div');bd.className='backdrop';bd.id='modal-bd';
-  bd.innerHTML=html;bd.addEventListener('click',e=>{if(e.target===bd)closeModal();});
-  document.body.appendChild(bd);
-  document.addEventListener('keydown',escH);
-}
-function closeModal(){document.getElementById('modal-bd')?.remove();document.removeEventListener('keydown',escH);}
-function escH(e){if(e.key==='Escape')closeModal();}
-
-function previewImg(input, previewId) {
-  const el = document.getElementById(previewId);
-  const file = input.files[0];
-  if (!file) { el.innerHTML = 'ไม่ได้เลือกไฟล์'; return; }
-  const reader = new FileReader();
-  reader.onload = e => {
-    el.innerHTML = `<img src="${e.target.result}" style="width:60px;height:60px;object-fit:cover;border-radius:4px;border:2px solid var(--spark)">`;
+  // ตั้งค่า Headers พื้นฐาน
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    ...(options.headers || {})
   };
-  reader.readAsDataURL(file);
-}
 
-function openImgModal(url) {
-  openModal(`<div class="modal" style="background:transparent;box-shadow:none;border:none;max-width:90vw;width:auto">
-    <div style="position:relative">
-      <button class="mx" style="position:absolute;top:-40px;right:0;background:rgba(0,0,0,0.5);color:#fff;border-radius:50%" onclick="closeModal()">✕</button>
-      <img src="${url}" style="max-width:100%;max-height:80vh;border-radius:12px;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);border:2px solid var(--wire)">
-    </div>
-  </div>`);
-}
-
-/* ═══════════════════════════════════════
-   BUILD SHELL (ROLE-BASED SPA)
-═══════════════════════════════════════ */
-async function buildShell(role){
-  const token = localStorage.getItem('APP_TOKEN');
-  if(!token){ window.location.href='index.html'; return; }
-
-  // ── Always refresh user data from server (fixes stale role bug) ──────────
   try {
-    const freshUser = await apiFetch('/auth/me');
-    APP.user = { ...APP.user, ...freshUser };
-    saveApp();
-  } catch(e) {
-    // Token expired or invalid → force re-login
-    localStorage.removeItem('APP_TOKEN');
-    localStorage.removeItem('APP_DATA');
-    window.location.href = 'index.html';
-    return;
-  }
-
-  const u = APP.user;
-  if(!u){ window.location.href='index.html'; return; }
-  if(u.role !== role) {
-    window.location.href = `${u.role}.html`; return;
-  }
-
-  const nav=[
-    {p:'dashboard',i:'📊',l:'ภาพรวม (Dashboard)',r:['user','technician','manager','admin']},
-    {p:'requests-list',i:'🔧',l:'รายการแจ้งซ่อม',r:['user','technician','manager','admin']},
-    {p:'request-new',i:'➕',l:'แจ้งซ่อมใหม่',r:['user','manager','admin']},
-    {sec:'การจัดการ',r:['technician','manager','admin']},
-    {p:'materials',i:'📦',l:'คลังวัสดุ',r:['technician','manager','admin']},
-    {p:'schedule',i:'📅',l:'ตารางงาน/เวร',r:['technician','manager','admin']},
-    {p:'reports',i:'📊',l:'รายงาน & Export',r:['manager','admin']},
-    {sec:'ทั่วไป',r:['user','technician','manager','admin']},
-    {p:'track',i:'🔍',l:'ติดตามงาน',r:['user','technician','manager','admin']},
-    {p:'settings',i:'⚙️',l:'ตั้งค่าระบบ',r:['admin','manager']},
-    {p:'profile',i:'👤',l:'โปรไฟล์ของฉัน',r:['user','technician','manager','admin']},
-  ];
-  
-  document.getElementById('root').innerHTML=`
-  <div class="shell" id="shell">
-    <nav class="sidebar" id="sidebar">
-      <div class="sb-brand">
-        <div class="sb-logo">🔧</div>
-        <div class="sb-name">ระบบแจ้งซ่อม<small>Maintenance System</small></div>
-      </div>
-      <div class="sb-nav" id="sb-nav">
-        ${nav.filter(n=>n.r.includes(role)).map(n=>{
-          if(n.sec)return`<div class="sb-sec">${n.sec}</div>`;
-          return`<a href="#" class="sb-link" data-page="${n.p}" onclick="switchPage('${n.p}')"><span class="ico">${n.i}</span><span>${n.l}</span></a>`;
-        }).join('')}
-      </div>
-      <div class="sb-foot">
-        <div class="sb-av">${(u.name||u.email||'?')[0].toUpperCase()}</div>
-        <div><div class="sb-uname">${u.name||u.email||'–'}</div><div class="sb-urole">${roleTH(u.role)}</div></div>
-        <button class="sb-out" onclick="logout()" title="ออกจากระบบ">↩</button>
-      </div>
-    </nav>
-    <div class="main">
-      <header class="topbar">
-        <button class="menu-toggle" id="menu-btn" onclick="toggleSidebar()">☰</button>
-        <div class="tb-title" id="page-title">ระบบแจ้งซ่อม</div>
-        <div class="tb-actions">
-          <div class="icon-btn" onclick="toggleNotif()" id="notif-btn" title="การแจ้งเตือน">🔔</div>
-          <div class="user-chip">
-            <div style="width:22px;height:22px;background:linear-gradient(135deg,var(--spark2),var(--violet));border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;flex-shrink:0">${(u.name||u.email||'?')[0].toUpperCase()}</div>
-            <span>${(u.name||u.email||'').split(' ')[0]}</span>
-          </div>
-        </div>
-      </header>
-      <main class="page" id="page-content"></main>
-    </div>
-  </div>`;
-  
-  if(window.innerWidth<=900)document.getElementById('menu-btn').classList.remove('hidden');
-  
-  // Initial page setup
-  renderCurrentPage();
-
-  // Polling or initial fetch of notifications
-  try {
-    const data = await apiFetch('/notifications');
-    if (data.unread > 0) {
-      document.getElementById('notif-btn').innerHTML += `<div class="badge-dot" id="notif-dot"></div>`;
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      ...options,
+      headers
+    });
+    
+    const data = await response.json();
+    
+    // จัดการกรณี Error จาก Server
+    if (!response.ok) {
+      // ถ้า Token หมดอายุ หรือไม่มีสิทธิ์ (401 Unauthorized) ให้เด้งออกไปหน้า Login
+      if (response.status === 401) {
+        localStorage.removeItem('APP_TOKEN');
+        localStorage.removeItem('APP_STATE');
+        window.location.href = 'index.html';
+      }
+      throw new Error(data.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อกับเซิร์ฟเวอร์');
     }
-    window.APP_NOTIFS = data.items;
-  } catch(e) { console.error('Failed to load notifications', e); }
-}
-
-function toggleSidebar() {
-  document.getElementById('sidebar')?.classList.toggle('open');
-}
-
-/* ═══════════════════════════════════════
-   SPA NAVIGATION
-═══════════════════════════════════════ */
-function switchPage(page, params = {}) {
-  let url = new URL(window.location);
-  url.searchParams.set('view', page);
-  for(let k in params) url.searchParams.set(k, params[k]);
-  window.history.pushState(null, '', url.toString());
-  renderCurrentPage();
-}
-
-window.addEventListener('popstate', renderCurrentPage);
-
-function renderCurrentPage() {
-  const u = APP.user;
-  if(!u) { window.location.href='index.html'; return; }
-  
-  let vp = new URLSearchParams(window.location.search).get('view');
-  if(!vp) {
-    vp = 'dashboard';
-    let url=new URL(window.location);url.searchParams.set('view',vp);
-    window.history.replaceState(null,'',url.toString());
-  }
-
-  // update sidebar highlight
-  document.querySelectorAll('.sb-link').forEach(el=>el.classList.remove('on'));
-  const l=document.querySelector(`.sb-link[data-page="${vp}"]`);
-  if(l)l.classList.add('on');
-  if(window.innerWidth<=900)document.getElementById('sidebar')?.classList.remove('open');
-
-  const titles={dashboard:'📊 ภาพรวมระบบ','requests-list':'🔧 รายการแจ้งซ่อม','request-new':'➕ แจ้งซ่อมใหม่','request-detail':'📋 รายละเอียดงานซ่อม',materials:'📦 คลังวัสดุ',schedule:'📅 ตารางงาน & เวรฉุกเฉิน',reports:'📊 รายงาน & Export',users:'👥 จัดการผู้ใช้','system-log':'📋 บันทึกกิจกรรมระบบ','notif-settings':'🔔 ตั้งค่าแจ้งเตือน',settings:'⚙️ ตั้งค่าระบบ',track:'🔍 ติดตามงาน',profile:'👤 โปรไฟล์'};
-  const tEl=document.getElementById('page-title');
-  if(tEl) tEl.textContent=titles[vp]||'ระบบแจ้งซ่อม';
-
-  // route
-  if(vp==='dashboard' && typeof pageDashboard==='function') pageDashboard();
-  else if(vp==='requests-list' && typeof pageRequestsList==='function') pageRequestsList(Object.fromEntries(new URLSearchParams(window.location.search)));
-  else if(vp==='request-new' && typeof pageNewRequest==='function') pageNewRequest();
-  else if(vp==='request-detail' && typeof pageRequestDetail==='function') {
-    const id = new URLSearchParams(window.location.search).get('id');
-    pageRequestDetail(id);
-  }
-  else if(vp==='materials' && typeof pageMaterials==='function') pageMaterials();
-  else if(vp==='schedule' && typeof pageSchedule==='function') pageSchedule();
-  else if(vp==='reports' && typeof pageReports==='function') pageReports();
-  else if(vp==='users' && typeof pageUsers==='function') pageUsers();
-  else if(vp==='system-log' && typeof pageSystemLog==='function') pageSystemLog();
-  else if(vp==='notif-settings' && typeof pageNotifSettings==='function') pageNotifSettings();
-  else if(vp==='settings' && typeof pageSettings==='function') pageSettings();
-  else if(vp==='track' && typeof pageTrack==='function') pageTrack();
-  else if(vp==='profile' && typeof pageProfile==='function') pageProfile();
-  else {
-    document.getElementById('page-content').innerHTML = emptyState('⚠️', 'ไม่พบหน้านี้ หรือคุณไม่มีสิทธิ์เข้าถึง');
+    
+    return data;
+  } catch (error) {
+    console.error(`[API Error] ${endpoint}:`, error.message);
+    throw error;
   }
 }
 
-/* ═══════════════════════════════════════
-   NOTIFICATIONS
-═══════════════════════════════════════ */
-async function toggleNotif(){
-  const ex=document.getElementById('notif-panel');
-  if(ex){ex.remove();APP.notifOpen=false;return;}
-  APP.notifOpen=true;
-  
-  const myNotifs = window.APP_NOTIFS || [];
-  
-  const panel=document.createElement('div');
-  panel.id='notif-panel';panel.className='notif-panel';
-  panel.innerHTML=`
-    <div class="np-h">
-      <span style="font-weight:700;font-size:.83rem">🔔 การแจ้งเตือน</span>
-      <button class="btn btn-ghost btn-sm" onclick="markAllRead()">อ่านทั้งหมด</button>
-    </div>
-    ${myNotifs.length?myNotifs.map(n=>`
-      <div class="ni ${n.is_read?'':'unread'}" onclick="clickNotif('${n.id}','${n.ref_request_id||''}')">
-        ${!n.is_read?'<div class="ni-dot"></div>':'<div style="width:7px"></div>'}
-        <div><div class="ni-t">${n.title}</div><div class="ni-m">${n.message}</div><div class="ni-tm">${timeAgo(n.created_at)}</div></div>
-      </div>`).join(''):emptyState('🔔','ไม่มีการแจ้งเตือน')}`;
-  document.getElementById('shell').appendChild(panel);
-}
+// =========================================
+// UTILITIES & UI HELPERS (Minimal Style)
+// =========================================
 
-async function markAllRead(){
-  try {
-    await apiFetch('/notifications/read-all', { method: 'PATCH' });
-    if(window.APP_NOTIFS) window.APP_NOTIFS.forEach(n=>n.is_read=1);
-    document.getElementById('notif-panel')?.remove();APP.notifOpen=false;
-    document.getElementById('notif-dot')?.remove();
-    toast('อ่านทั้งหมดแล้ว');
-  } catch(e){ toast(e.message,'err'); }
-}
-
-async function clickNotif(id,reqId){
-  try {
-    const n = window.APP_NOTIFS?.find(x=>x.id===id);
-    if(n && !n.is_read){
-      n.is_read=1;
-      await apiFetch(`/notifications/${id}/read`, { method: 'PATCH' });
+/**
+ * สร้าง Badge แสดงสถานะแบบเรียบหรู (ไม่ใช้ Emoji)
+ * @param {string} status - สถานะ เช่น 'pending', 'progress', 'completed'
+ */
+function getStatusBadge(status) {
+  const statusConfig = {
+    'pending': { 
+      text: 'รอดำเนินการ', 
+      classes: 'bg-amber-50 text-amber-700 border-amber-200',
+      icon: '<svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+    },
+    'progress': { 
+      text: 'กำลังดำเนินการ', 
+      classes: 'bg-blue-50 text-blue-700 border-blue-200',
+      icon: '<svg class="w-3.5 h-3.5 mr-1.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>'
+    },
+    'completed': { 
+      text: 'เสร็จสิ้น', 
+      classes: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      icon: '<svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>'
+    },
+    'cancelled': { 
+      text: 'ยกเลิก', 
+      classes: 'bg-slate-100 text-slate-600 border-slate-200',
+      icon: '<svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>'
     }
-  } catch(e){}
-  if(reqId)switchPage('request-detail',{id:reqId});
-  document.getElementById('notif-panel')?.remove();APP.notifOpen=false;
+  };
+
+  const config = statusConfig[status] || statusConfig['pending'];
+  
+  return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${config.classes}">
+            ${config.icon}
+            ${config.text}
+          </span>`;
 }
+
+// รันคำสั่งโหลดข้อมูลพื้นฐานทันทีที่สคริปต์นี้ทำงาน
+loadApp();

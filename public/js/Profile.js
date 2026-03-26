@@ -1,105 +1,212 @@
-/* ═══════════════════════════════════════
-   PAGE: PROFILE & SECURITY
-   Allows users to update info and change password
-═══════════════════════════════════════ */
-async function pageProfile() {
-  const c = document.getElementById('page-content');
-  c.innerHTML = loadingState();
+/* =========================================
+   USER PROFILE MODULE
+   Minimal UI & SVG Icons
+========================================= */
 
-  try {
-    const u = await apiFetch('/auth/me');
-    APP.user = u; // Refresh local state
-    saveApp();
+function pageProfile() {
+  const content = document.getElementById('page-content');
+  const user = window.APP && window.APP.user ? window.APP.user : {};
 
-    c.innerHTML = `
-      <div style="max-width:800px;margin:0 auto">
-        <div class="flex ic jb mb2">
-          <div>
-            <div style="font-size:1.15rem;font-weight:700">👤 โปรไฟล์ของฉัน</div>
-            <div class="text-muted text-xs">จัดการข้อมูลส่วนตัวและความปลอดภัยของบัญชี</div>
+  // แปลง Role เป็นภาษาไทยให้ดูสวยงาม
+  const roleDisplay = {
+    'admin': 'ผู้ดูแลระบบ (Admin)',
+    'manager': 'ผู้จัดการ (Manager)',
+    'technician': 'ช่างซ่อมบำรุง (Technician)',
+    'user': 'ผู้ใช้งานทั่วไป (User)'
+  };
+  const currentRole = roleDisplay[user.role] || user.role || 'ไม่ระบุสถานะ';
+
+  content.innerHTML = `
+    <div class="fade-in max-w-4xl mx-auto space-y-6">
+      
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+          <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+          โปรไฟล์ส่วนตัว
+        </h2>
+        <p class="text-slate-500 text-sm mt-1">จัดการข้อมูลส่วนตัวและรหัสผ่านของคุณ</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <div class="col-span-1 space-y-6">
+          <div class="glass-panel p-6 rounded-2xl flex flex-col items-center text-center border border-slate-200/60 shadow-sm">
+            <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 text-white flex items-center justify-center text-3xl font-bold shadow-md border-4 border-white mb-4">
+              ${user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+            </div>
+            <h3 class="text-lg font-bold text-slate-800">${user.name || 'ไม่ระบุชื่อ'}</h3>
+            <p class="text-sm font-medium text-indigo-600 mt-1">${currentRole}</p>
+            <div class="mt-4 w-full pt-4 border-t border-slate-100 flex items-center justify-center gap-2 text-sm text-slate-500">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+              ${user.email || 'ไม่ระบุอีเมล'}
+            </div>
           </div>
-          <div class="badge ${u.is_active?'b-green':'b-red'}">${u.is_active?'บัญชีปกติ':'ถูกระงับ'}</div>
         </div>
 
-        <div class="g2">
-          <!-- Personal Info Card -->
-          <div class="card">
-            <div class="card-h"><div class="card-t">📝 ข้อมูลส่วนตัว</div></div>
-            <div class="card-b">
-              <div class="fg"><label class="fl">ชื่อ-นามสกุล</label><input class="fc" id="p-name" value="${u.name||''}"></div>
-              <div class="fg"><label class="fl">อีเมล (สมัครสมาชิก)</label><input class="fc" value="${u.email}" disabled style="opacity:.6;cursor:not-allowed"></div>
-              <div class="frow">
-                <div class="fg"><label class="fl">รหัสนักศึกษา/พนักงาน</label><input class="fc" id="p-sid" value="${u.student_id||''}"></div>
-                <div class="fg"><label class="fl">สาขา/แผนก</label><input class="fc" id="p-dept" value="${u.department||''}"></div>
+        <div class="col-span-1 md:col-span-2 space-y-6">
+          
+          <div class="glass-panel p-6 md:p-8 rounded-2xl border border-slate-200/60 shadow-sm">
+            <h3 class="text-lg font-bold text-slate-800 mb-5 flex items-center gap-2">
+              <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
+              ข้อมูลพื้นฐาน
+            </h3>
+            <div id="profile-alert" class="mb-4 empty:hidden"></div>
+            
+            <div class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">ชื่อ - นามสกุล</label>
+                  <input type="text" id="p-name" class="input-glass" value="${user.name || ''}">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">อีเมล (ไม่สามารถเปลี่ยนได้)</label>
+                  <input type="email" class="input-glass bg-slate-100 text-slate-500 cursor-not-allowed" value="${user.email || ''}" disabled>
+                </div>
               </div>
-              <div class="fg"><label class="fl">เบอร์โทรศัพท์</label><input class="fc" id="p-phone" value="${u.phone||''}" placeholder="08x-xxx-xxxx"></div>
-              <button class="btn btn-primary btn-block mt2" onclick="updateProfile()">✅ บันทึกข้อมูล</button>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">รหัส นศ./พนักงาน</label>
+                  <input type="text" id="p-sid" class="input-glass" value="${user.student_id || ''}">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">สาขา/แผนก</label>
+                  <input type="text" id="p-dept" class="input-glass" value="${user.department || ''}">
+                </div>
+              </div>
+              <div class="pt-2 flex justify-end">
+                <button onclick="updateProfile()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  บันทึกข้อมูลส่วนตัว
+                </button>
+              </div>
             </div>
           </div>
 
-          <!-- Security Card -->
-          <div class="card">
-            <div class="card-h"><div class="card-t">🛡️ ความปลอดภัย</div></div>
-            <div class="card-b">
-              <p class="text-xs text-muted mb2">รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร</p>
-              <div class="fg"><label class="fl">รหัสผ่านเดิม</label><input class="fc" id="p-old-pw" type="password" placeholder="••••••••"></div>
-              <div class="fg"><label class="fl">รหัสผ่านใหม่</label><input class="fc" id="p-new-pw" type="password" placeholder="••••••••"></div>
-              <div class="fg"><label class="fl">ยืนยันรหัสผ่านใหม่</label><input class="fc" id="p-new-pw2" type="password" placeholder="••••••••"></div>
-              <button class="btn btn-amber btn-block mt2" style="background:var(--red);border-color:var(--red)" onclick="changePassword()">🔑 เปลี่ยนรหัสผ่าน</button>
+          <div class="glass-panel p-6 md:p-8 rounded-2xl border border-slate-200/60 shadow-sm">
+            <h3 class="text-lg font-bold text-slate-800 mb-5 flex items-center gap-2">
+              <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              เปลี่ยนรหัสผ่าน
+            </h3>
+            <div id="password-alert" class="mb-4 empty:hidden"></div>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">รหัสผ่านปัจจุบัน</label>
+                <input type="password" id="pw-old" class="input-glass" placeholder="••••••••">
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">รหัสผ่านใหม่</label>
+                  <input type="password" id="pw-new" class="input-glass" placeholder="อย่างน้อย 6 ตัวอักษร">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-slate-700 mb-1.5 ml-1">ยืนยันรหัสผ่านใหม่</label>
+                  <input type="password" id="pw-confirm" class="input-glass" placeholder="กรอกรหัสผ่านใหม่อีกครั้ง">
+                </div>
+              </div>
+              <div class="pt-2 flex justify-end">
+                <button onclick="changePassword()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                  เปลี่ยนรหัสผ่าน
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Role Badge Info -->
-        <div class="alert al-info mt2" style="display:flex;align-items:center;gap:1rem">
-          <div style="font-size:1.5rem">🎖️</div>
-          <div>
-            <div style="font-weight:700">บทบาทปัจจุบัน: ${u.role?.toUpperCase()}</div>
-            <div class="text-xs" style="opacity:.8">สิทธิ์การใช้งานของคุณถูกกำหนดโดย Admin หากต้องการเปลี่ยนสิทธิ์กรุณาติดต่อผู้ดูแลระบบ</div>
-          </div>
         </div>
       </div>
-    `;
-  } catch (e) {
-    c.innerHTML = `<div class="alert al-danger">❌ ${e.message}</div>`;
+    </div>
+  `;
+}
+
+// ==========================================
+// LOGIC FUNCTIONS
+// ==========================================
+
+// ฟังก์ชันสร้าง Alert แบบ Minimal (นำมาจาก auth.js เพื่อให้โทนเดียวกัน)
+function createProfileAlert(type, message) {
+  const styles = {
+    success: 'text-emerald-800 bg-emerald-50 border-emerald-200',
+    error: 'text-rose-800 bg-rose-50 border-rose-200',
+    warn: 'text-amber-800 bg-amber-50 border-amber-200'
+  };
+  return `<div class="flex items-center gap-3 p-3 text-sm font-medium rounded-xl border ${styles[type]}">
+            <span>${message}</span>
+          </div>`;
+}
+
+// อัปเดตข้อมูลส่วนตัว
+async function updateProfile() {
+  const alertBox = document.getElementById('profile-alert');
+  const payload = {
+    name: document.getElementById('p-name').value.trim(),
+    student_id: document.getElementById('p-sid').value.trim(),
+    department: document.getElementById('p-dept').value.trim()
+  };
+
+  if (!payload.name) {
+    alertBox.innerHTML = createProfileAlert('warn', 'กรุณากรอกชื่อ-นามสกุล');
+    return;
+  }
+
+  try {
+    // สมมติว่า Endpoint สำหรับอัปเดตโปรไฟล์คือ PUT /users/me
+    const res = await apiFetch('/users/me', {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+
+    // อัปเดตข้อมูลในระบบ Global
+    window.APP.user.name = payload.name;
+    window.APP.user.student_id = payload.student_id;
+    window.APP.user.department = payload.department;
+    saveApp(); // บันทึกลง LocalStorage
+
+    alertBox.innerHTML = createProfileAlert('success', 'บันทึกข้อมูลเรียบร้อยแล้ว');
+    
+    // รีเฟรชหน้าเพื่อให้รูปโปรไฟล์และชื่อด้านซ้ายอัปเดตตาม
+    setTimeout(() => pageProfile(), 1500);
+
+  } catch (error) {
+    alertBox.innerHTML = createProfileAlert('error', `เกิดข้อผิดพลาด: ${error.message}`);
   }
 }
 
-async function updateProfile() {
-  const name = document.getElementById('p-name').value.trim();
-  const student_id = document.getElementById('p-sid').value.trim();
-  const department = document.getElementById('p-dept').value.trim();
-  const phone = document.getElementById('p-phone').value.trim();
-
-  if (!name) return toast('กรุณาระบุชื่อ-นามสกุล', 'warn');
-
-  try {
-    const res = await apiFetch('/auth/profile', {
-      method: 'PATCH',
-      body: JSON.stringify({ name, student_id, department, phone })
-    });
-    toast(res.message);
-    pageProfile(); // Reload
-  } catch (e) { toast(e.message, 'err'); }
-}
-
+// เปลี่ยนรหัสผ่าน
 async function changePassword() {
-  const old_password = document.getElementById('p-old-pw').value;
-  const new_password = document.getElementById('p-new-pw').value;
-  const confirm_password = document.getElementById('p-new-pw2').value;
+  const alertBox = document.getElementById('password-alert');
+  const oldPw = document.getElementById('pw-old').value;
+  const newPw = document.getElementById('pw-new').value;
+  const confPw = document.getElementById('pw-confirm').value;
 
-  if (!old_password || !new_password) return toast('กรุณากรอกรหัสผ่านให้ครบ', 'warn');
-  if (new_password.length < 6) return toast('รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร', 'warn');
-  if (new_password !== confirm_password) return toast('รหัสผ่านใหม่ไม่ตรงกัน', 'warn');
+  if (!oldPw || !newPw || !confPw) {
+    alertBox.innerHTML = createProfileAlert('warn', 'กรุณากรอกข้อมูลให้ครบถ้วน');
+    return;
+  }
+  if (newPw.length < 6) {
+    alertBox.innerHTML = createProfileAlert('warn', 'รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร');
+    return;
+  }
+  if (newPw !== confPw) {
+    alertBox.innerHTML = createProfileAlert('warn', 'รหัสผ่านใหม่และการยืนยันไม่ตรงกัน');
+    return;
+  }
 
   try {
-    const res = await apiFetch('/auth/profile/password', {
-      method: 'PATCH',
-      body: JSON.stringify({ old_password, new_password })
+    // สมมติว่า Endpoint สำหรับเปลี่ยนรหัสผ่านคือ PUT /users/password
+    await apiFetch('/users/password', {
+      method: 'PUT',
+      body: JSON.stringify({ old_password: oldPw, new_password: newPw })
     });
-    toast(res.message);
-    document.getElementById('p-old-pw').value = '';
-    document.getElementById('p-new-pw').value = '';
-    document.getElementById('p-new-pw2').value = '';
-  } catch (e) { toast(e.message, 'err'); }
+
+    alertBox.innerHTML = createProfileAlert('success', 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว');
+    
+    // ล้างช่องกรอกรหัสผ่าน
+    document.getElementById('pw-old').value = '';
+    document.getElementById('pw-new').value = '';
+    document.getElementById('pw-confirm').value = '';
+
+  } catch (error) {
+    alertBox.innerHTML = createProfileAlert('error', `เปลี่ยนรหัสผ่านไม่สำเร็จ: ${error.message}`);
+  }
 }

@@ -1,39 +1,158 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบแจ้งซ่อม - ผู้ดูแลระบบ</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap"
-    rel="stylesheet">
+  <title>iMaintain - Super Admin Portal</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="style.css">
 </head>
+<body class="text-slate-800 antialiased overflow-hidden">
 
-<body>
-  <div id="root"></div>
-  <!-- External Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <div class="flex h-screen w-full">
+    
+    <aside id="app-sidebar" class="w-64 bg-zinc-950 text-zinc-400 flex flex-col transition-all duration-300 z-20 shadow-2xl shrink-0">
+      <div class="p-6 flex items-center gap-3 border-b border-zinc-800/50">
+        <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-zinc-950 font-bold shadow-lg shadow-emerald-500/20">SA</div>
+        <h1 class="text-lg font-bold text-white tracking-tight">Admin<span class="text-emerald-400">Center</span></h1>
+      </div>
+      
+      <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1 no-scrollbar">
+        
+        <p class="px-4 text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">System Control</p>
+        
+        <button onclick="navTo('dashboard')" id="menu-dashboard" class="menu-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-white bg-emerald-600 shadow-lg shadow-emerald-900/20 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+          สถิติภาพรวมระบบ
+        </button>
 
-  <script src="js/code.js?v=4"></script>
-  <script src="js/auth.js?v=3"></script>
-  <script src="js/Requests.js?v=3"></script>
-  <script src="js/Dashboardlist.js?v=4"></script>
-  <script src="js/Materials.js?v=3"></script>
-  <script src="js/Users.js?v=3"></script>
-  <script src="js/Reports.js?v=1"></script>
-  <script src="js/Schedule.js?v=1"></script>
-  <script src="js/SystemLog.js?v=1"></script>
-  <script src="js/Settings.js?v=1"></script>
-  <script src="js/Profile.js?v=1"></script>
+        <button onclick="navTo('users')" id="menu-users" class="menu-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl hover:text-white hover:bg-zinc-900 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+          จัดการพนักงาน/สิทธิ์
+        </button>
+
+        <button onclick="navTo('all-requests')" id="menu-all-requests" class="menu-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl hover:text-white hover:bg-zinc-900 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+          ควบคุมรายการซ่อม
+        </button>
+
+        <div class="pt-4 mt-4 border-t border-zinc-900"></div>
+        <p class="px-4 text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">Security & Logs</p>
+
+        <button onclick="navTo('logs')" id="menu-logs" class="menu-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl hover:text-white hover:bg-zinc-900 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+          System Logs
+        </button>
+
+        <button onclick="navTo('settings')" id="menu-settings" class="menu-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl hover:text-white hover:bg-zinc-900 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+          ตั้งค่าแม่ข่าย
+        </button>
+
+      </nav>
+      
+      <div class="p-4 border-t border-zinc-900">
+        <button onclick="doLogout()" class="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold rounded-xl text-rose-400 hover:bg-rose-500/10 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+          SIGN OUT
+        </button>
+      </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
+      
+      <header class="h-16 bg-white/90 backdrop-blur-md border-b border-zinc-200 flex items-center justify-between px-6 z-10 shrink-0 shadow-sm">
+        <div class="flex items-center gap-2">
+           <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+           <h2 class="font-bold text-zinc-800" id="page-title">Admin Dashboard</h2>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <div class="flex flex-col items-end">
+            <p id="admin-name-display" class="text-sm font-bold text-zinc-900 leading-none">Root User</p>
+            <span class="text-[9px] font-black text-emerald-600 uppercase tracking-tighter">System Administrator</span>
+          </div>
+          <div id="admin-avatar-display" class="w-10 h-10 rounded-xl bg-zinc-900 text-emerald-400 flex items-center justify-center font-bold text-lg border-2 border-emerald-500/20 shadow-inner">A</div>
+        </div>
+      </header>
+
+      <main id="page-content" class="flex-1 overflow-y-auto bg-zinc-50 p-6 no-scrollbar">
+        </main>
+
+    </div>
+  </div>
+
+  <script src="2.Dashboard.js"></script>
+  <script src="3.RequestList.js"></script>
+  <script src="5.RequestDetail.js"></script>
+  <script src="10.Settings.js"></script>
+  <script src="11.SystemLog.js"></script>
+  <script src="12.Users.js"></script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => buildShell('admin'));
+    document.addEventListener("DOMContentLoaded", () => {
+      // Security Check
+      const token = localStorage.getItem('APP_TOKEN');
+      if(!token) {
+         window.location.href = 'index.html';
+         return;
+      }
+
+      // Load Profile
+      try {
+        const state = JSON.parse(localStorage.getItem('APP_STATE')) || {};
+        const user = state.user || { name: 'Admin User' };
+        document.getElementById('admin-name-display').innerText = user.name;
+        document.getElementById('admin-avatar-display').innerText = user.name.charAt(0).toUpperCase();
+      } catch(e) { console.error("Profile load failed"); }
+
+      // Initial Route
+      navTo('dashboard');
+    });
+
+    function navTo(page) {
+      // UI Update
+      document.querySelectorAll('.menu-btn').forEach(btn => {
+        btn.classList.remove('text-white', 'bg-emerald-600', 'shadow-lg', 'shadow-emerald-900/20');
+        btn.classList.add('text-zinc-400', 'hover:text-white', 'hover:bg-zinc-900');
+      });
+      const activeBtn = document.getElementById(`menu-${page}`);
+      if(activeBtn) {
+        activeBtn.classList.remove('text-zinc-400', 'hover:text-white', 'hover:bg-zinc-900');
+        activeBtn.classList.add('text-white', 'bg-emerald-600', 'shadow-lg', 'shadow-emerald-900/20');
+      }
+
+      // Title Update
+      const titles = {
+        'dashboard': 'System Overview',
+        'users': 'User Management Control',
+        'all-requests': 'All Maintenance Tasks',
+        'logs': 'Security & Activity Logs',
+        'settings': 'Server Configurations'
+      };
+      document.getElementById('page-title').innerText = titles[page] || 'Administrator';
+
+      // SPA Rendering
+      const main = document.getElementById('page-content');
+      main.innerHTML = '';
+      
+      if(page === 'dashboard') pageDashboard();
+      else if(page === 'users') pageUsers();
+      else if(page === 'all-requests') pageRequestList();
+      else if(page === 'logs') pageSystemLog();
+      else if(page === 'settings') pageSettings();
+    }
+
+    function doLogout() {
+      if(confirm('คุณแน่ใจหรือไม่ว่าต้องการออกจากระบบ Admin?')) {
+        localStorage.clear(); // ล้างข้อมูลทั้งหมดเพื่อความปลอดภัย
+        window.location.href = 'index.html';
+      }
+    }
   </script>
 </body>
-
 </html>

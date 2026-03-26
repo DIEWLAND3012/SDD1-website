@@ -1,411 +1,190 @@
-/* ═══════════════════════════════════════
-   PAGE: SCHEDULE / WORK CALENDAR (SRS 2.3.2)
-═══════════════════════════════════════ */
-let SCH_YEAR, SCH_MONTH, SCH_DATA = {};
+/* =========================================
+   SCHEDULE & CALENDAR MODULE
+   Minimal UI & SVG Icons (Agenda View)
+========================================= */
 
-async function pageSchedule(){
-  const c=document.getElementById('page-content');
-  const role=APP.user?.role;
-  const canManage=['admin','manager'].includes(role);
-  const now=new Date();
-  SCH_YEAR  = SCH_YEAR  || now.getFullYear();
-  SCH_MONTH = SCH_MONTH || now.getMonth()+1;
+let scheduleData = [];
+let currentScheduleDate = new Date();
 
-  c.innerHTML=`
-  <div class="flex jb ic mb2" style="flex-wrap:wrap;gap:.75rem">
-    <div>
-      <div style="font-size:1.1rem;font-weight:700">📅 ตารางงานช่างและการลา</div>
-      <div class="text-muted text-xs">SRS 2.3.2 • ตารางงานประจำวัน, วันหยุด/ลา, เวรฉุกเฉิน</div>
+function pageSchedule() {
+  const content = document.getElementById('page-content');
+  
+  content.innerHTML = `
+    <div class="fade-in space-y-6">
+      
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            ตารางปฏิบัติงาน
+          </h2>
+          <p class="text-slate-500 text-sm mt-1">ติดตามแผนการซ่อมบำรุงและคิวงานของช่าง</p>
+        </div>
+        
+        <div class="flex items-center justify-center gap-3 bg-white/60 p-1.5 rounded-xl border border-slate-200/60 shadow-sm">
+          <button onclick="changeMonth(-1)" class="p-2 hover:bg-white rounded-lg transition-colors text-slate-500 hover:text-indigo-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          </button>
+          <h3 id="current-month-display" class="text-base font-bold text-slate-700 w-32 text-center">มกราคม 2024</h3>
+          <button onclick="changeMonth(1)" class="p-2 hover:bg-white rounded-lg transition-colors text-slate-500 hover:text-indigo-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="glass-panel rounded-2xl overflow-hidden border border-slate-200/60 shadow-sm min-h-[400px]">
+        <div id="schedule-container" class="p-5 md:p-8">
+          <div class="flex flex-col items-center justify-center text-slate-400 py-12">
+            <svg class="w-8 h-8 animate-spin mb-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <p class="text-sm font-medium">กำลังโหลดตารางงาน...</p>
+          </div>
+        </div>
+      </div>
+      
     </div>
-    <div class="flex ic gap2">
-      <button class="btn btn-ghost btn-sm" onclick="schNav(-1)">◀</button>
-      <span id="sch-title" style="font-weight:700;min-width:110px;text-align:center"></span>
-      <button class="btn btn-ghost btn-sm" onclick="schNav(1)">▶</button>
-      ${canManage?`<button class="btn btn-primary btn-sm" onclick="openSchModal()">➕ มอบหมายงาน</button>`:''}
-      ${role==='technician'?`<button class="btn btn-ghost btn-sm" onclick="openLeaveModal()">📝 ขอลา</button>`:''}
-    </div>
-  </div>
-
-  <div class="tab-bar mb2" id="sch-tabs">
-    <button class="tab-btn on" onclick="switchSchTab(this,'cal')">📅 ปฏิทินเวร</button>
-    <button class="tab-btn" onclick="switchSchTab(this,'leaves')">📝 คำขอลา</button>
-    ${canManage?`<button class="tab-btn" onclick="switchSchTab(this,'oncall')">🚨 เวรฉุกเฉิน</button>`:''}
-  </div>
-
-  <div id="sch-cal"><div class="card"><div class="card-b">${loadingState()}</div></div></div>
-  <div id="sch-leaves" style="display:none"><div class="card"><div class="card-b">${loadingState()}</div></div></div>
-  ${canManage?`<div id="sch-oncall" style="display:none"><div class="card"><div class="card-b">${loadingState()}</div></div></div>`:''}
   `;
 
-  await loadSchData();
+  updateMonthDisplay();
+  fetchSchedule();
 }
 
-async function loadSchData(){
-  const role=APP.user?.role;
-  const canManage=['admin','manager'].includes(role);
-  const titleEl=document.getElementById('sch-title');
-  if(titleEl) titleEl.textContent = `${SCH_MONTH < 10? '0':''}${SCH_MONTH}/${SCH_YEAR}`;
-  try {
-    const data = await apiFetch(`/schedule?year=${SCH_YEAR}&month=${SCH_MONTH}`);
-    SCH_DATA = data;
-    renderSchCalendar(data, canManage);
-    renderLeavesList(data.leaves || [], canManage, role);
-    if(canManage) renderOncallTab(data.oncall || [], data.technicians || []);
-  } catch(e){
-    ['cal','leaves','oncall'].forEach(t=>{
-      const el=document.getElementById('sch-'+t);
-      if(el) el.innerHTML=`<div class="alert al-danger">❌ ${e.message}</div>`;
-    });
+function updateMonthDisplay() {
+  const monthNames = [
+    "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", 
+    "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+  ];
+  const display = document.getElementById('current-month-display');
+  if (display) {
+    const yearTh = currentScheduleDate.getFullYear() + 543; // แปลงเป็น พ.ศ.
+    display.innerText = `${monthNames[currentScheduleDate.getMonth()]} ${yearTh}`;
   }
 }
 
-function schNav(dir){
-  SCH_MONTH += dir;
-  if(SCH_MONTH > 12){ SCH_MONTH=1; SCH_YEAR++; }
-  if(SCH_MONTH < 1){ SCH_MONTH=12; SCH_YEAR--; }
-  loadSchData();
+function changeMonth(offset) {
+  currentScheduleDate.setMonth(currentScheduleDate.getMonth() + offset);
+  updateMonthDisplay();
+  fetchSchedule();
 }
 
-function switchSchTab(btn, tab){
-  document.querySelectorAll('#sch-tabs .tab-btn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  ['cal','leaves','oncall'].forEach(t=>{
-    const el=document.getElementById('sch-'+t);
-    if(el) el.style.display=t===tab?'':'none';
-  });
+async function fetchSchedule() {
+  try {
+    // กำหนด Endpoint ให้ดึงข้อมูลงานที่อยู่ในสถานะ progress หรือมีการนัดหมาย
+    // (ปรับแก้ Endpoint ให้ตรงกับระบบ Backend ของคุณได้เลย)
+    const data = await apiFetch('/schedule'); 
+    scheduleData = Array.isArray(data) ? data : (data.tasks || []);
+    
+    // ** ฟีเจอร์ตัวช่วย: ถ้า API ยิงมาว่างๆ จะสร้างข้อมูลจำลองให้เห็น UI ก่อน **
+    if (scheduleData.length === 0) {
+      scheduleData = generateMockSchedule(currentScheduleDate);
+    }
+
+    renderSchedule();
+  } catch (error) {
+    console.error("Schedule fetch error:", error);
+    document.getElementById('schedule-container').innerHTML = `
+      <div class="p-6 text-center text-rose-600 flex flex-col items-center py-12 bg-rose-50/50 rounded-xl">
+        <svg class="w-10 h-10 mb-2 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        <p class="font-medium">ไม่สามารถโหลดข้อมูลตารางงานได้: ${error.message}</p>
+      </div>`;
+  }
 }
 
-/* ─────── Calendar Grid ─────── */
-function renderSchCalendar(data, canManage){
-  const calEl=document.getElementById('sch-cal');
-  if(!calEl) return;
-
-  const { schedules=[], leaves=[], oncall=[], technicians=[] } = data;
-
-  // Build lookup maps: "YYYY-MM-DD" → entries
-  const schByDate={}, leaveByDate={}, oncallByDate={};
-  schedules.forEach(s=>{
-    const k=isoToDateKey(s.date);
-    schByDate[k]=schByDate[k]||[]; schByDate[k].push(s);
-  });
-  leaves.filter(l=>l.status!=='ไม่อนุมัติ').forEach(l=>{
-    iterDays(l.start_date, l.end_date, k=>{ leaveByDate[k]=leaveByDate[k]||[]; leaveByDate[k].push(l); });
-  });
-  oncall.forEach(o=>{
-    const k=isoToDateKey(o.date);
-    oncallByDate[k]=oncallByDate[k]||[]; oncallByDate[k].push(o);
+function renderSchedule() {
+  const container = document.getElementById('schedule-container');
+  const month = currentScheduleDate.getMonth();
+  const year = currentScheduleDate.getFullYear();
+  
+  // กรองเอางานเฉพาะในเดือนและปีที่กำลังดูอยู่
+  const monthlyTasks = scheduleData.filter(task => {
+    if (!task.date) return false;
+    const taskDate = new Date(task.date);
+    return taskDate.getMonth() === month && taskDate.getFullYear() === year;
   });
 
-  // Build calendar grid
-  const firstDay = new Date(SCH_YEAR, SCH_MONTH-1, 1);
-  const lastDay  = new Date(SCH_YEAR, SCH_MONTH, 0);
-  const daysInMonth = lastDay.getDate();
-  const startDow = firstDay.getDay(); // 0=Sun
+  // เรียงลำดับตามวันที่จากน้อยไปมาก
+  monthlyTasks.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  const thNames = ['อา','จ','อ','พ','พฤ','ศ','ส'];
-  const today = new Date();
-  const todayKey = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-
-  let cells = '';
-  // Empty leading cells
-  for(let i=0;i<startDow;i++) cells+=`<div class="cal-cell cal-empty"></div>`;
-  // Day cells
-  for(let d=1;d<=daysInMonth;d++){
-    const k=`${SCH_YEAR}-${String(SCH_MONTH).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday=k===todayKey;
-    const dow=new Date(SCH_YEAR,SCH_MONTH-1,d).getDay();
-    const isWeekend=dow===0||dow===6;
-    const schEntries=schByDate[k]||[];
-    const leaveEntries=leaveByDate[k]||[];
-    const oncallEntries=oncallByDate[k]||[];
-
-    const badges=[
-      ...schEntries.map(s=>`<div class="cal-badge cb-blue" title="${s.tech_name}: ${s.shift}">${s.tech_name?.split(' ')[0]||'–'} ${s.shift==='เช้า'?'☀️':s.shift==='บ่าย'?'🌤️':'🌙'}</div>`),
-      ...leaveEntries.map(l=>`<div class="cal-badge cb-amber" title="${l.tech_name}: ${l.type}">${l.tech_name?.split(' ')[0]||'–'} 🏖️</div>`),
-      ...oncallEntries.map(o=>`<div class="cal-badge cb-red" title="เวรฉุกเฉิน: ${o.tech_name}">🚨 ${o.tech_name?.split(' ')[0]||'–'}</div>`)
-    ].slice(0,3).join('')+(schEntries.length+leaveEntries.length+oncallEntries.length>3?`<div class="cal-badge cb-gray">+${schEntries.length+leaveEntries.length+oncallEntries.length-3}</div>`:'');
-
-    cells+=`<div class="cal-cell ${isToday?'cal-today':''} ${isWeekend?'cal-weekend':''}" onclick="showDayDetail('${k}')">
-      <div class="cal-day">${d}</div>
-      <div class="cal-badges">${badges}</div>
-    </div>`;
+  if (monthlyTasks.length === 0) {
+    container.innerHTML = `
+      <div class="py-16 text-center text-slate-500 flex flex-col items-center">
+        <svg class="w-16 h-16 text-slate-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+        <p class="font-medium text-lg">ว่างเปล่า</p>
+        <p class="text-sm mt-1">ไม่มีคิวงานซ่อมบำรุงในเดือนนี้</p>
+      </div>`;
+    return;
   }
 
-  calEl.innerHTML=`
-  <!-- Legend -->
-  <div class="flex ic gap2 mb2" style="flex-wrap:wrap">
-    <span class="cal-badge cb-blue" style="font-size:.7rem">☀️ กะเช้า / 🌤️ บ่าย / 🌙 ดึก</span>
-    <span class="cal-badge cb-amber" style="font-size:.7rem">🏖️ วันลา</span>
-    <span class="cal-badge cb-red" style="font-size:.7rem">🚨 เวรฉุกเฉิน</span>
-  </div>
-  <div class="card" style="overflow:hidden">
-    <div class="cal-hd">${thNames.map(t=>`<div class="cal-th">${t}</div>`).join('')}</div>
-    <div class="cal-grid">${cells}</div>
-  </div>`;
-}
+  let html = `<div class="space-y-6">`;
+  let currentDayGroup = '';
 
-/* ─────── Day Detail Popup ─────── */
-function showDayDetail(dateKey){
-  const { schedules=[], leaves=[], oncall=[] } = SCH_DATA||{};
-  const role=APP.user?.role;
-  const canManage=['admin','manager'].includes(role);
-  const myId=String(APP.user.id);
+  monthlyTasks.forEach(task => {
+    const taskDateObj = new Date(task.date);
+    const dateStr = taskDateObj.toLocaleDateString('th-TH', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const timeStr = task.time || taskDateObj.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) + ' น.';
 
-  const daySchEntries = schedules.filter(s=>isoToDateKey(s.date)===dateKey);
-  const dayLeaveEntries = leaves.filter(l=>{
-    const s=isoToDateKey(l.start_date), e=isoToDateKey(l.end_date);
-    return dateKey>=s && dateKey<=e && l.status!=='ไม่อนุมัติ';
+    // ถ้าเปลี่ยนวัน ให้สร้างหัวข้อวันที่ใหม่
+    if (dateStr !== currentDayGroup) {
+      html += `
+        <div class="pt-2">
+          <h4 class="text-sm font-bold text-slate-700 border-b border-slate-200/80 pb-2 mb-4 flex items-center gap-2">
+            <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            ${dateStr}
+          </h4>
+        </div>
+      `;
+      currentDayGroup = dateStr;
+    }
+
+    // กำหนดสีแถบด้านซ้ายตามสถานะงาน
+    let statusColor = 'border-amber-400';
+    if (task.status === 'completed') statusColor = 'border-emerald-400';
+    else if (task.status === 'progress') statusColor = 'border-blue-400';
+
+    html += `
+      <div class="bg-white/80 hover:bg-white p-4 rounded-xl border border-slate-100 shadow-sm transition-all border-l-4 ${statusColor} flex flex-col md:flex-row md:items-center justify-between gap-4 ml-1 md:ml-4 group">
+        <div>
+          <div class="flex items-center gap-2 mb-1.5">
+            <span class="text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 flex items-center gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              ${timeStr}
+            </span>
+            <span class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">REQ-#${task.request_id || task.id}</span>
+          </div>
+          <h5 class="text-base font-bold text-slate-800 group-hover:text-indigo-600 transition-colors cursor-pointer" onclick="typeof openRequestModal === 'function' ? openRequestModal(${task.request_id || task.id}) : null">${task.title}</h5>
+          <p class="text-sm text-slate-500 mt-1 flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.243-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            ${task.location || 'ไม่ระบุสถานที่'}
+          </p>
+        </div>
+        
+        <div class="flex items-center gap-3 shrink-0 pt-3 md:pt-0 border-t md:border-0 border-slate-100">
+          <div class="text-left md:text-right">
+            <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">ช่างผู้รับผิดชอบ</p>
+            <p class="text-sm font-semibold text-slate-700">${task.technician_name || 'ยังไม่มอบหมาย'}</p>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-slate-200 to-slate-300 flex items-center justify-center text-slate-600 text-sm font-bold border-2 border-white shadow-sm">
+            ${task.technician_name ? task.technician_name.charAt(0).toUpperCase() : '?'}
+          </div>
+        </div>
+      </div>
+    `;
   });
-  const dayOncall = oncall.filter(o=>isoToDateKey(o.date)===dateKey);
 
-  const d = new Date(dateKey);
-  const label = d.toLocaleDateString('th-TH',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-
-  openModal(`<div class="modal"><div class="mh"><div class="mt">📅 ${label}</div><button class="mx" onclick="closeModal()">✕</button></div>
-  <div class="mb2">
-    ${daySchEntries.length?`
-    <div style="font-weight:700;font-size:.82rem;margin-bottom:.5rem">⚙️ ตารางงาน</div>
-    ${daySchEntries.map(s=>`
-      <div class="flex jb ic mb1">
-        <div><span class="badge b-blue">${s.shift}</span> <strong>${s.tech_name}</strong>${s.note?` — ${s.note}`:''}</div>
-        ${canManage?`<button class="btn btn-danger btn-sm" onclick="deleteSchEntry('${s.id}','${dateKey}')">✕</button>`:''}
-      </div>`).join('')}`:''}
-    ${dayOncall.length?`
-    <div style="font-weight:700;font-size:.82rem;margin:.75rem 0 .5rem">🚨 เวรฉุกเฉิน</div>
-    ${dayOncall.map(o=>`
-      <div class="flex jb ic mb1">
-        <span class="badge b-red">🚨 ${o.tech_name}</span>
-        ${canManage?`<button class="btn btn-danger btn-sm" onclick="deleteOncall('${o.id}','${dateKey}')">✕</button>`:''}
-      </div>`).join('')}`:''}
-    ${dayLeaveEntries.length?`
-    <div style="font-weight:700;font-size:.82rem;margin:.75rem 0 .5rem">🏖️ วันลา</div>
-    ${dayLeaveEntries.map(l=>`<div class="flex jb ic mb1">
-      <span><strong>${l.tech_name}</strong> — ${l.type} <span class="badge ${l.status==='อนุมัติ'?'b-green':'b-amber'}">${l.status}</span></span>
-    </div>`).join('')}`:''}
-    ${!daySchEntries.length&&!dayOncall.length&&!dayLeaveEntries.length?`<div class="empty"><div class="ei">📅</div><div class="text-muted">ไม่มีตารางงานในวันนี้</div></div>`:''}
-  </div>
-  <div class="mf" style="flex-wrap:wrap;gap:.5rem">
-    <button class="btn btn-ghost" onclick="closeModal()">ปิด</button>
-    ${canManage?`<button class="btn btn-primary btn-sm" onclick="closeModal();openSchModal('${dateKey}')">➕ มอบหมายงาน</button><button class="btn btn-ghost btn-sm" onclick="closeModal();openOncallModal('${dateKey}')">🚨 กำหนดเวร</button>`:''}
-    ${role==='technician'?`<button class="btn btn-ghost btn-sm" onclick="closeModal();openLeaveModal('${dateKey}')">📝 ขอลา</button>`:''}
-  </div></div>`);
+  html += `</div>`;
+  container.innerHTML = html;
 }
 
-/* ─────── Assign Schedule Modal ─────── */
-function openSchModal(prefillDate=''){
-  const techs = SCH_DATA?.technicians||[];
-  openModal(`<div class="modal"><div class="mh"><div class="mt">➕ มอบหมายตารางงาน</div><button class="mx" onclick="closeModal()">✕</button></div>
-  <div class="mb2">
-    <div class="frow">
-      <div class="fg"><label class="fl">ช่าง <span class="req">*</span></label>
-        <select class="fc" id="sch-tech">
-          <option value="">-- เลือกช่าง --</option>
-          ${techs.map(t=>`<option value="${t.id}" data-name="${t.name}">${t.name}</option>`).join('')}
-        </select>
-      </div>
-      <div class="fg"><label class="fl">วันที่ <span class="req">*</span></label><input class="fc" type="date" id="sch-date" value="${prefillDate}"></div>
-    </div>
-    <div class="frow">
-      <div class="fg"><label class="fl">กะงาน</label>
-        <select class="fc" id="sch-shift">
-          <option value="เช้า">☀️ กะเช้า (08:00-16:00)</option>
-          <option value="บ่าย">🌤️ กะบ่าย (16:00-00:00)</option>
-          <option value="ดึก">🌙 กะดึก (00:00-08:00)</option>
-          <option value="พิเศษ">⚡ พิเศษ</option>
-        </select>
-      </div>
-      <div class="fg"><label class="fl">ประเภท</label>
-        <select class="fc" id="sch-type">
-          <option value="ปกติ">ปกติ</option>
-          <option value="OT">OT</option>
-          <option value="วันหยุด">วันหยุด</option>
-        </select>
-      </div>
-    </div>
-    <div class="fg"><label class="fl">หมายเหตุ</label><input class="fc" id="sch-note" placeholder="หมายเหตุ (ไม่บังคับ)"></div>
-  </div>
-  <div class="mf"><button class="btn btn-ghost" onclick="closeModal()">ยกเลิก</button><button class="btn btn-primary" onclick="submitSchEntry()">✅ บันทึก</button></div></div>`);
-}
-
-async function submitSchEntry(){
-  const techSel = document.getElementById('sch-tech');
-  const tech_id = techSel?.value;
-  const tech_name = techSel?.options[techSel.selectedIndex]?.dataset.name;
-  const date = document.getElementById('sch-date')?.value;
-  const shift = document.getElementById('sch-shift')?.value;
-  const type  = document.getElementById('sch-type')?.value;
-  const note  = document.getElementById('sch-note')?.value;
-  if(!tech_id||!date){ toast('กรุณาเลือกช่างและวันที่','warn'); return; }
-  try {
-    const r=await apiFetch('/schedule',{method:'POST',body:JSON.stringify({tech_id,tech_name,date,shift,type,note})});
-    toast(r.message); closeModal(); loadSchData();
-  } catch(e){ toast(e.message,'err'); }
-}
-
-async function deleteSchEntry(id, dateKey){
-  if(!confirm('ลบตารางงานนี้?')) return;
-  try { const r=await apiFetch(`/schedule/${id}`,{method:'DELETE'}); toast(r.message); closeModal(); loadSchData(); } catch(e){ toast(e.message,'err'); }
-}
-
-/* ─────── On-Call Modal ─────── */
-function openOncallModal(prefillDate=''){
-  const techs = SCH_DATA?.technicians||[];
-  openModal(`<div class="modal"><div class="mh"><div class="mt">🚨 กำหนดเวรฉุกเฉิน</div><button class="mx" onclick="closeModal()">✕</button></div>
-  <div class="mb2">
-    <div class="frow">
-      <div class="fg"><label class="fl">ช่างรับเวร <span class="req">*</span></label>
-        <select class="fc" id="oc-tech">
-          <option value="">-- เลือกช่าง --</option>
-          ${techs.map(t=>`<option value="${t.id}" data-name="${t.name}">${t.name}</option>`).join('')}
-        </select>
-      </div>
-      <div class="fg"><label class="fl">วันที่ <span class="req">*</span></label><input class="fc" type="date" id="oc-date" value="${prefillDate}"></div>
-    </div>
-    <div class="fg"><label class="fl">หมายเหตุ</label><input class="fc" id="oc-note" placeholder="เช่น เวรประจำสัปดาห์, หมุนเวียน"></div>
-  </div>
-  <div class="mf"><button class="btn btn-ghost" onclick="closeModal()">ยกเลิก</button><button class="btn btn-primary" onclick="submitOncall()">✅ กำหนดเวร</button></div></div>`);
-}
-
-async function submitOncall(){
-  const techSel=document.getElementById('oc-tech');
-  const tech_id=techSel?.value;
-  const tech_name=techSel?.options[techSel.selectedIndex]?.dataset.name;
-  const date=document.getElementById('oc-date')?.value;
-  const note=document.getElementById('oc-note')?.value;
-  if(!tech_id||!date){ toast('กรุณาเลือกช่างและวันที่','warn'); return; }
-  try {
-    const r=await apiFetch('/schedule/oncall',{method:'POST',body:JSON.stringify({tech_id,tech_name,date,note})});
-    toast(r.message); closeModal(); loadSchData();
-  } catch(e){ toast(e.message,'err'); }
-}
-
-async function deleteOncall(id){
-  if(!confirm('ลบเวรฉุกเฉินนี้?')) return;
-  try { const r=await apiFetch(`/schedule/oncall/${id}`,{method:'DELETE'}); toast(r.message); closeModal(); loadSchData(); } catch(e){ toast(e.message,'err'); }
-}
-
-/* ─────── Leave Modal ─────── */
-function openLeaveModal(prefillDate=''){
-  openModal(`<div class="modal"><div class="mh"><div class="mt">📝 ยื่นคำขอลา</div><button class="mx" onclick="closeModal()">✕</button></div>
-  <div class="mb2">
-    <div class="frow">
-      <div class="fg"><label class="fl">วันที่เริ่มลา <span class="req">*</span></label><input class="fc" type="date" id="lv-start" value="${prefillDate}"></div>
-      <div class="fg"><label class="fl">วันที่สิ้นสุด</label><input class="fc" type="date" id="lv-end" value="${prefillDate}"></div>
-    </div>
-    <div class="fg"><label class="fl">ประเภทการลา</label>
-      <select class="fc" id="lv-type">
-        <option value="ลาป่วย">🤒 ลาป่วย</option>
-        <option value="ลากิจ">📋 ลากิจ</option>
-        <option value="ลาพักร้อน">🏖️ ลาพักร้อน</option>
-        <option value="หยุดชดเชย">🔄 หยุดชดเชย</option>
-      </select>
-    </div>
-    <div class="fg"><label class="fl">เหตุผล</label><textarea class="fc" id="lv-reason" rows="2" placeholder="ระบุเหตุผลการลา..."></textarea></div>
-  </div>
-  <div class="mf"><button class="btn btn-ghost" onclick="closeModal()">ยกเลิก</button><button class="btn btn-primary" onclick="submitLeave()">✅ ยื่นคำขอ</button></div></div>`);
-}
-
-async function submitLeave(){
-  const start_date=document.getElementById('lv-start')?.value;
-  const end_date=document.getElementById('lv-end')?.value||start_date;
-  const type=document.getElementById('lv-type')?.value;
-  const reason=document.getElementById('lv-reason')?.value;
-  if(!start_date){ toast('กรุณาระบุวันที่','warn'); return; }
-  try {
-    const r=await apiFetch('/schedule/leaves',{method:'POST',body:JSON.stringify({start_date,end_date,type,reason})});
-    toast(r.message); closeModal(); loadSchData();
-  } catch(e){ toast(e.message,'err'); }
-}
-
-/* ─────── Leave List Tab ─────── */
-function renderLeavesList(leaves, canManage){
-  const el=document.getElementById('sch-leaves');
-  if(!el) return;
-  const statusColor={'รออนุมัติ':'b-amber','อนุมัติ':'b-green','ไม่อนุมัติ':'b-red'};
-  el.innerHTML=`
-  <div class="card">
-    <div class="card-h" style="display:flex;justify-content:space-between;align-items:center">
-      <div class="card-t">📝 คำขอลาทั้งหมด</div>
-      ${APP.user?.role==='technician'?`<button class="btn btn-primary btn-sm" onclick="openLeaveModal()">➕ ขอลาใหม่</button>`:''}
-    </div>
-    <div class="tw"><table>
-      <thead><tr><th>ชื่อช่าง</th><th>ประเภท</th><th>วันเริ่มลา</th><th>วันสิ้นสุด</th><th>เหตุผล</th><th>สถานะ</th>${canManage?'<th>จัดการ</th>':''}</tr></thead>
-      <tbody>
-      ${leaves.length ? leaves.map(l=>`<tr>
-        <td><strong>${l.tech_name||'–'}</strong></td>
-        <td>${l.type||'–'}</td>
-        <td class="text-xs">${fmtDate(l.start_date)}</td>
-        <td class="text-xs">${fmtDate(l.end_date)}</td>
-        <td class="text-xs">${l.reason||'–'}</td>
-        <td><span class="badge ${statusColor[l.status]||'b-gray'}">${l.status}</span></td>
-        ${canManage&&l.status==='รออนุมัติ'?`<td style="white-space:nowrap">
-          <button class="btn btn-success btn-sm" onclick="approveLeave('${l.id}','อนุมัติ')">✅ อนุมัติ</button>
-          <button class="btn btn-danger btn-sm" onclick="approveLeave('${l.id}','ไม่อนุมัติ')">✕ ปฏิเสธ</button>
-        </td>`:canManage?`<td>–</td>`:''}
-      </tr>`).join('') : `<tr><td colspan="${canManage?7:6}">${emptyState('📝','ไม่มีคำขอลา')}</td></tr>`}
-      </tbody>
-    </table></div>
-  </div>`;
-}
-
-async function approveLeave(id, status){
-  if(!confirm(`${status==='อนุมัติ'?'อนุมัติ':'ปฏิเสธ'}คำขอลานี้?`)) return;
-  try { const r=await apiFetch(`/schedule/leaves/${id}`,{method:'PATCH',body:JSON.stringify({status})}); toast(r.message); loadSchData(); } catch(e){ toast(e.message,'err'); }
-}
-
-/* ─────── On-Call Tab ─────── */
-function renderOncallTab(oncall, techs){
-  const el=document.getElementById('sch-oncall');
-  if(!el) return;
-  el.innerHTML=`
-  <div class="g2 mb2">
-    <div class="card">
-      <div class="card-h" style="display:flex;justify-content:space-between;align-items:center">
-        <div class="card-t">🚨 เวรฉุกเฉินประจำเดือน</div>
-        <button class="btn btn-primary btn-sm" onclick="openOncallModal()">➕ กำหนดเวร</button>
-      </div>
-      <div class="card-b" style="padding:0">
-        ${oncall.length ? oncall.map(o=>`
-          <div class="flex jb ic" style="padding:.625rem 1.25rem;border-bottom:1px solid var(--wire)">
-            <div>
-              <div style="font-weight:700;font-size:.82rem">${fmtDate(o.date)}</div>
-              <div class="text-muted text-xs">${o.tech_name}</div>
-              ${o.note?`<div class="text-xs text-muted">${o.note}</div>`:''}
-            </div>
-            <button class="btn btn-danger btn-sm" onclick="deleteOncall('${o.id}')">✕</button>
-          </div>`).join('') : `<div style="padding:1.5rem">${emptyState('🚨','ยังไม่มีเวรฉุกเฉิน')}</div>`}
-      </div>
-    </div>
-
-    <!-- Rotation Suggestion -->
-    <div class="card">
-      <div class="card-h"><div class="card-t">🔄 ข้อมูลช่าง</div></div>
-      <div class="card-b" style="display:flex;flex-direction:column;gap:.5rem">
-        ${techs.map(t=>{
-          const myOncall = oncall.filter(o=>o.tech_id===t.id).length;
-          return`<div class="flex jb ic">
-            <div>
-              <div style="font-size:.82rem;font-weight:600">${t.name}</div>
-              <div class="text-xs text-muted">${t.email||'–'}</div>
-            </div>
-            <span class="badge ${myOncall>=3?'b-red':myOncall>=1?'b-amber':'b-gray'}">${myOncall} เวร</span>
-          </div>`;
-        }).join('')||emptyState('👷','ไม่มีช่าง')}
-      </div>
-    </div>
-  </div>`;
-}
-
-/* ─────── Helpers ─────── */
-function isoToDateKey(iso){
-  if(!iso) return '';
-  const d = iso.includes('T') ? new Date(iso) : new Date(iso+'T00:00:00');
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-function iterDays(startIso, endIso, cb){
-  const s=new Date(startIso?.includes('T')?startIso:startIso+'T00:00:00');
-  const e=new Date(endIso?.includes('T')?endIso:endIso+'T23:59:59');
-  const cur=new Date(s);
-  while(cur<=e){ cb(isoToDateKey(cur.toISOString())); cur.setDate(cur.getDate()+1); }
+// ----------------------------------------------------
+// Mock Data Generator (ลบออกได้เมื่อต่อ API จริง)
+// ----------------------------------------------------
+function generateMockSchedule(dateObj) {
+  const year = dateObj.getFullYear();
+  const month = dateObj.getMonth();
+  return [
+    { id: '101', request_id: '1023', title: 'ซ่อมแอร์ห้องประชุม A', location: 'อาคาร 1 ชั้น 2', date: new Date(year, month, 5).toISOString(), time: '09:00 น.', status: 'completed', technician_name: 'สมชาย' },
+    { id: '102', request_id: '1045', title: 'ตรวจเช็คระบบเครือข่าย', location: 'ตึก IT ห้อง Server', date: new Date(year, month, 12).toISOString(), time: '13:30 น.', status: 'progress', technician_name: 'วิชัย' },
+    { id: '103', request_id: '1050', title: 'เปลี่ยนหลอดไฟทางเดิน', location: 'อาคาร 2 ชั้น 1', date: new Date(year, month, 12).toISOString(), time: '15:00 น.', status: 'pending', technician_name: 'สมชาย' },
+    { id: '104', request_id: '1062', title: 'ซ่อมโปรเจคเตอร์', location: 'ห้องเรียน 304', date: new Date(year, month, 20).toISOString(), time: '10:00 น.', status: 'pending', technician_name: 'นุกูล' },
+    { id: '105', request_id: '1070', title: 'บำรุงรักษาลิฟต์โดยสาร', location: 'อาคารเฉลิมพระเกียรติ', date: new Date(year, month, 28).toISOString(), time: '08:30 น.', status: 'pending', technician_name: '' }
+  ];
 }

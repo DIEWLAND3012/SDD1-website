@@ -1,34 +1,163 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบแจ้งซ่อม - หัวหน้าช่าง</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap"
-    rel="stylesheet">
+  <title>iMaintain - ระบบบริหารจัดการ (Admin/Manager)</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="style.css">
 </head>
+<body class="text-slate-800 antialiased overflow-hidden">
 
-<body>
-  <div id="root"></div>
-  <script src="js/code.js?v=4"></script>
-  <script src="js/auth.js?v=3"></script>
-  <script src="js/Requests.js?v=3"></script>
-  <script src="js/Dashboardlist.js?v=4"></script>
-  <script src="js/Materials.js?v=3"></script>
-  <script src="js/SystemLog.js?v=1"></script>
-  <script src="js/Settings.js?v=1"></script>
-  <script src="js/Profile.js?v=1"></script>
-  <script src="js/Users.js?v=3"></script>
-  <script src="js/Reports.js?v=1"></script>
-  <script src="js/Schedule.js?v=1"></script>
+  <div class="flex h-screen w-full">
+    
+    <aside id="app-sidebar" class="w-64 bg-slate-950 text-slate-300 flex flex-col transition-all duration-300 z-20 shadow-2xl shrink-0">
+      <div class="p-6 flex items-center gap-3 border-b border-slate-800/50">
+        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/20">M</div>
+        <h1 class="text-lg font-bold text-white tracking-wide">iMaintain<span class="text-indigo-400">.</span></h1>
+      </div>
+      
+      <nav class="flex-1 overflow-y-auto py-6 px-3 space-y-1 no-scrollbar">
+        
+        <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">ภาพรวมระบบ</p>
+        <button onclick="navTo('dashboard')" id="menu-dashboard" class="menu-btn w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl text-white bg-indigo-600 shadow-md transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+          แดชบอร์ดบริหาร
+        </button>
+
+        <button onclick="navTo('all-requests')" id="menu-all-requests" class="menu-btn w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+          รายการแจ้งซ่อมทั้งหมด
+        </button>
+
+        <div class="pt-4 mt-4 border-t border-slate-800/50"></div>
+        <p class="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">การจัดการ</p>
+
+        <button onclick="navTo('users')" id="menu-users" class="menu-btn w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+          จัดการผู้ใช้งาน
+        </button>
+
+        <button onclick="navTo('reports')" id="menu-reports" class="menu-btn w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          รายงานวิเคราะห์
+        </button>
+
+        <button onclick="navTo('logs')" id="menu-logs" class="menu-btn w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          ประวัติกิจกรรมระบบ
+        </button>
+
+        <button onclick="navTo('settings')" id="menu-settings" class="menu-btn w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          การตั้งค่าระบบ
+        </button>
+
+      </nav>
+      
+      <div class="p-4 border-t border-slate-800/50">
+        <button onclick="doLogout()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl text-slate-400 hover:text-white hover:bg-rose-900/30 hover:text-rose-400 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+          ออกจากระบบ
+        </button>
+      </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
+      
+      <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-6 z-10 shrink-0 shadow-sm">
+        <div class="flex items-center gap-4">
+           <h2 class="font-bold text-slate-800 text-lg hidden sm:block" id="page-title">แดชบอร์ดบริหาร</h2>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <p id="manager-name-display" class="text-sm font-bold text-slate-700">ผู้ดูแลระบบ</p>
+            <p class="text-[10px] text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded uppercase tracking-wider">Administrator</p>
+          </div>
+          <div id="manager-avatar-display" class="w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm border-2 border-white shadow-sm ring-2 ring-indigo-100">A</div>
+        </div>
+      </header>
+
+      <main id="page-content" class="flex-1 overflow-y-auto bg-slate-50/50 relative p-4 lg:p-6 no-scrollbar">
+        </main>
+
+    </div>
+  </div>
+
+  <script src="2.Dashboard.js"></script>
+  <script src="3.RequestList.js"></script>
+  <script src="5.RequestDetail.js"></script>
+  <script src="9.Reports.js"></script>
+  <script src="10.Settings.js"></script>
+  <script src="11.SystemLog.js"></script>
+  <script src="12.Users.js"></script>
+
   <script>
-    document.addEventListener('DOMContentLoaded', () => buildShell('manager'));
+    document.addEventListener("DOMContentLoaded", () => {
+      // ตรวจสอบ Token
+      if(!localStorage.getItem('APP_TOKEN')) {
+         window.location.href = 'index.html';
+         return;
+      }
+
+      // ดึงข้อมูลผู้ใช้จาก State
+      const state = JSON.parse(localStorage.getItem('APP_STATE')) || {};
+      const user = state.user || { name: 'Admin' };
+      
+      document.getElementById('manager-name-display').innerText = user.name;
+      document.getElementById('manager-avatar-display').innerText = user.name.charAt(0).toUpperCase();
+
+      // เริ่มหน้าแรกที่ Dashboard
+      navTo('dashboard');
+    });
+
+    function navTo(page) {
+      // จัดการ UI ปุ่มเมนู
+      document.querySelectorAll('.menu-btn').forEach(btn => {
+        btn.classList.remove('text-white', 'bg-indigo-600', 'shadow-md');
+        btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-900');
+      });
+      const activeBtn = document.getElementById(`menu-${page}`);
+      if(activeBtn) {
+        activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-900');
+        activeBtn.classList.add('text-white', 'bg-indigo-600', 'shadow-md');
+      }
+
+      // เปลี่ยนชื่อหัวข้อบน Topbar
+      const titles = {
+        'dashboard': 'แดชบอร์ดบริหาร',
+        'all-requests': 'รายการแจ้งซ่อมทั้งหมด',
+        'users': 'จัดการผู้ใช้งานในระบบ',
+        'reports': 'รายงานสรุปผล',
+        'logs': 'ประวัติกิจกรรม (Logs)',
+        'settings': 'ตั้งค่าระบบ'
+      };
+      document.getElementById('page-title').innerText = titles[page] || 'iMaintain';
+
+      // ล้างหน้าจอและ Render ฟังก์ชันจากไฟล์ JS ที่โหลดไว้
+      const container = document.getElementById('page-content');
+      container.innerHTML = '';
+      
+      if(page === 'dashboard') pageDashboard(); 
+      else if(page === 'all-requests') pageRequestList(); // ใช้ฟังก์ชันจาก 3.RequestList.js
+      else if(page === 'users') pageUsers(); // จาก 12.Users.js
+      else if(page === 'reports') pageReports(); // จาก 9.Reports.js
+      else if(page === 'logs') pageSystemLog(); // จาก 11.SystemLog.js
+      else if(page === 'settings') pageSettings(); // จาก 10.Settings.js
+    }
+
+    function doLogout() {
+      if(confirm('ยืนยันออกจากระบบผู้ดูแล?')) {
+        localStorage.removeItem('APP_TOKEN');
+        localStorage.removeItem('APP_STATE');
+        window.location.href = 'index.html';
+      }
+    }
   </script>
 </body>
-
 </html>

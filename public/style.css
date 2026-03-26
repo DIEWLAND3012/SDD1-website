@@ -1,181 +1,103 @@
-/* ==========================================================================
-   iMaintain System - Base Stylesheet (Glassmorphism & Aurora Theme)
-   ========================================================================== */
+/* =========================================
+   iMaintain - Base Styles & UI Utility
+   Minimal, Clean & Glassmorphism UI
+========================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
 
-:root {
-  /* Theme Base Variables */
-  --bg-base: #faf9fe;
-  --text-main: #1e293b; /* slate-800 */
-  --text-muted: #64748b; /* slate-500 */
-  
-  /* Glassmorphism Variables */
-  --glass-bg: rgba(255, 255, 255, 0.65);
-  --glass-bg-hover: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Inter', 'IBM Plex Sans Thai', sans-serif;
-  background-color: var(--bg-base);
-  color: var(--text-main);
-  min-height: 100vh;
+html, body {
   overflow-x: hidden;
-  position: relative;
-  /* ป้องกันการกระตุกเวลาทำแอนิเมชัน */
+  font-family: 'Prompt', sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f8fafc;
+  color: #334155;
 }
 
-/* ==========================================================================
-   1. AURORA BACKGROUND (แสงเหนือเคลื่อนไหว)
-   ========================================================================== */
-.aurora-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: -1;
-  overflow: hidden;
-  background-color: var(--bg-base);
-  pointer-events: none; /* ป้องกันไม่ให้บังการคลิก */
+/* 🪟 Glassmorphism Utilities (คลีนและมินิมอล ไม่ทึบหรือสว่างจนเกินไป) */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 24px -2px rgba(15, 23, 42, 0.04);
 }
 
-.aurora-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.6;
-  animation: float 20s infinite alternate ease-in-out;
-}
-
-/* Blob สีคราม/น้ำเงิน (เหมาะกับ Theme หลัก) */
-.aurora-blob-1 {
-  top: -10%;
-  left: -10%;
-  width: 50vw;
-  height: 50vw;
-  background: #e0e7ff; /* Indigo-100 */
-  animation-delay: 0s;
-}
-
-/* Blob สีชมพู/ม่วง (ช่วยเพิ่มมิติให้ Admin) */
-.aurora-blob-2 {
-  bottom: -20%;
-  right: -10%;
-  width: 60vw;
-  height: 60vw;
-  background: #fce7f3; /* Pink-100 */
-  animation-delay: -5s;
-}
-
-/* Blob สีส้ม/เหลือง (ช่วยเพิ่มมิติให้ Technician) */
-.aurora-blob-3 {
-  top: 40%;
-  left: 60%;
-  width: 40vw;
-  height: 40vw;
-  background: #ffedd5; /* Orange-100 */
-  animation-delay: -10s;
-}
-
-@keyframes float {
-  0%   { transform: translate(0, 0) scale(1); }
-  33%  { transform: translate(30px, -50px) scale(1.1); }
-  66%  { transform: translate(-20px, 20px) scale(0.9); }
-  100% { transform: translate(0, 0) scale(1); }
-}
-
-/* ==========================================================================
-   2. GLASSMORPHISM UTILITIES (แผ่นกระจก)
-   ========================================================================== */
-
-/* คลาสหลักสำหรับการ์ดข้อมูล (Card) */
 .glass-pane {
-  background: var(--glass-bg);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  border-radius: 1rem;
-  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 32px -4px rgba(15, 23, 42, 0.05);
+  position: relative;
+  z-index: 10;
 }
 
-.glass-pane:hover {
-  background: var(--glass-bg-hover);
-  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.1);
-  transform: translateY(-2px);
-}
-
-/* สำหรับ Sidebar / Navbar ที่โปร่งแสงมากขึ้น */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--glass-border);
-}
-
-/* สำหรับ Input Forms */
+/* ✍️ Form Inputs (ช่องกรอกข้อมูลมินิมอล) */
 .input-glass {
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid var(--glass-border);
-  border-radius: 0.75rem;
-  padding: 0.6rem 1rem;
   width: 100%;
+  padding: 0.6rem 1rem;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  color: #1e293b;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.01);
   outline: none;
-  transition: all 0.3s ease;
-  color: var(--text-main);
 }
 
 .input-glass:focus {
   background: #ffffff;
-  border-color: #6366f1; /* สี Indigo ของ Tailwind */
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
-/* ==========================================================================
-   3. CUSTOM SCROLLBAR & ANIMATIONS
-   ========================================================================== */
-
-/* ซ่อน Scrollbar สำหรับ Sidebar แนวนอนในมือถือ */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.input-glass::placeholder {
+  color: #94a3b8;
 }
 
-/* Custom Scrollbar เล็กๆ สวยๆ สำหรับตาราง หรือ Content หลัก */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(203, 213, 225, 0.6); /* slate-300 */
-  border-radius: 10px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.9); /* slate-400 */
-}
-
-/* อนิเมชัน Fade In ตอนเปลี่ยนหน้า (เรียกใช้ผ่าน JS ได้) */
+/* 🎬 Page Animations (เอฟเฟกต์โผล่ขึ้นมาแบบนุ่มนวล) */
 .fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
+  animation: fadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { 
+    opacity: 0; 
+    transform: translateY(8px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* 🖱️ Minimal Scrollbar (สกอร์บาร์แบบบางเฉียบ ซ่อนตอนไม่ใช้) */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; 
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3); 
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.6); 
+}
+
+/* Utility ซ่อน Scrollbar ชั่วคราว (แต่ยังเลื่อนได้) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

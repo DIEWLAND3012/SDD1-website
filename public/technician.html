@@ -1,31 +1,134 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบแจ้งซ่อม - ช่างซ่อม</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap"
-    rel="stylesheet">
+  <title>iMaintain - ระบบช่างซ่อมบำรุง</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="style.css">
 </head>
+<body class="text-slate-800 antialiased overflow-hidden">
 
-<body>
-  <div id="root"></div>
-  <script src="js/code.js?v=3"></script>
-  <script src="js/auth.js?v=3"></script>
-  <script src="js/Requests.js?v=3"></script>
-  <script src="js/Profile.js?v=1"></script>
-  <script src="js/Dashboardlist.js?v=4"></script>
-  <script src="js/Schedule.js?v=1"></script>
-  <script src="js/Materials.js?v=3"></script>
-  <script src="js/Users.js?v=3"></script>
+  <div class="flex h-screen w-full">
+    
+    <aside id="app-sidebar" class="w-64 bg-slate-900 text-slate-300 flex flex-col transition-all duration-300 z-20 shadow-xl shrink-0">
+      <div class="p-6 flex items-center gap-3 border-b border-slate-800">
+        <div class="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-white font-bold">T</div>
+        <h1 class="text-lg font-bold text-white tracking-wide">iMaintain<span class="text-amber-400">.</span></h1>
+      </div>
+      
+      <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1 no-scrollbar">
+        
+        <button onclick="navTo('jobs')" id="menu-jobs" class="menu-btn w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-white bg-amber-600 shadow-sm transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+          งานที่ต้องทำ
+        </button>
+
+        <button onclick="navTo('update')" id="menu-update" class="menu-btn w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+          อัปเดตงานซ่อม
+        </button>
+
+        <button onclick="navTo('history')" id="menu-history" class="menu-btn w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          ประวัติงานซ่อม
+        </button>
+
+        <button onclick="navTo('settings')" id="menu-settings" class="menu-btn w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          โปรไฟล์ / ตั้งค่า
+        </button>
+
+      </nav>
+      
+      <div class="p-4 border-t border-slate-800">
+        <button onclick="doLogout()" class="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+          ออกจากระบบ
+        </button>
+      </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
+      
+      <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-6 z-10 shrink-0 shadow-sm">
+        <div>
+          <span class="text-sm font-bold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-100 flex items-center gap-2">
+            <span class="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
+            Technical Portal
+          </span>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <p id="tech-name-display" class="text-sm font-bold text-slate-700">ช่างเทคนิค</p>
+            <p class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Technician Staff</p>
+          </div>
+          <div id="tech-avatar-display" class="w-9 h-9 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-sm shadow-md border-2 border-white">T</div>
+        </div>
+      </header>
+
+      <main id="page-content" class="flex-1 overflow-y-auto bg-slate-50 relative p-4 lg:p-6 no-scrollbar">
+        </main>
+
+    </div>
+  </div>
+
+  <script src="6.TechnicianJobs.js"></script>
+  <script src="7.UpdateStatus.js"></script>
+  <script src="8.History.js"></script>
+  <script src="10.Settings.js"></script>
+
   <script>
-    document.addEventListener('DOMContentLoaded', () => buildShell('technician'));
+    document.addEventListener("DOMContentLoaded", () => {
+      // ตรวจสอบ Token
+      if(!localStorage.getItem('APP_TOKEN')) {
+         window.location.href = 'index.html';
+         return;
+      }
+
+      // โชว์ชื่อช่าง
+      const user = JSON.parse(localStorage.getItem('APP_STATE'))?.user || { name: 'Technician' };
+      document.getElementById('tech-name-display').innerText = user.name;
+      document.getElementById('tech-avatar-display').innerText = user.name.charAt(0).toUpperCase();
+
+      // เริ่มหน้าแรกที่ รายการงาน
+      navTo('jobs');
+    });
+
+    function navTo(page) {
+      // จัดการ UI ปุ่มเมนู
+      document.querySelectorAll('.menu-btn').forEach(btn => {
+        btn.classList.remove('text-white', 'bg-amber-600', 'shadow-sm');
+        btn.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-800');
+      });
+      const activeBtn = document.getElementById(`menu-${page}`);
+      if(activeBtn) {
+        activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-800');
+        activeBtn.classList.add('text-white', 'bg-amber-600', 'shadow-sm');
+      }
+
+      // ล้างหน้าจอและ Render
+      const container = document.getElementById('page-content');
+      container.innerHTML = '';
+      
+      if(page === 'jobs') pageTechnicianJobs(); 
+      else if(page === 'update') pageUpdateStatus(); 
+      else if(page === 'history') pageHistory(); 
+      else if(page === 'settings') pageSettings();
+    }
+
+    function doLogout() {
+      if(confirm('ยืนยันออกจากระบบสำหรับช่าง?')) {
+        localStorage.removeItem('APP_TOKEN');
+        localStorage.removeItem('APP_STATE');
+        window.location.href = 'index.html';
+      }
+    }
   </script>
 </body>
-
 </html>
